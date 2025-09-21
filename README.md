@@ -1,161 +1,221 @@
-# Jobs Tracker - MVP1
+# 🎯 Jobs Tracker MVP1
 
-Una aplicación web completa para organizar y gestionar tu búsqueda laboral, con funcionalidades avanzadas de adaptación de CV y seguimiento de procesos.
+> **Organiza tu búsqueda laboral. Destaca en cada postulación.**
 
-## 🌟 Características Principales
+Una aplicación moderna para gestionar postulaciones laborales con adaptación de CV por IA, diseñada específicamente para el mercado LATAM.
 
-### 🔐 Autenticación y Onboarding
-- Sistema de login/registro completo
-- Wizard de onboarding en 3 pasos
-- Personalización inicial basada en preferencias
+![Jobs Tracker Dashboard](https://img.shields.io/badge/Status-MVP%20Ready-green)
+![Next.js](https://img.shields.io/badge/Next.js-14-black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-3.0-38B2AC)
 
-### 📊 Dashboard Excel-like
-- Tabla editable inline para gestión rápida de postulaciones
-- Estadísticas en tiempo real
+## ✨ Características Principales
+
+### 🌐 **Landing Page Profesional**
+- Diseño moderno inspirado en Simplify
+- Hero section con propuesta de valor clara
+- Mockup del dashboard mostrando el producto
+- Validación social con logos de empresas LATAM
+- CTAs optimizados para conversión
+
+### 🔐 **Sistema de Autenticación Completo**
+- Login/Registro con validación en tiempo real
+- Formularios con manejo de errores
+- Estados de carga y feedback visual
+- Redirección inteligente post-login
+
+### 🚀 **Onboarding de 3 Pasos**
+- Configuración de rol objetivo
+- Número de procesos activos
+- Prioridades de organización
+- Experiencia guiada para nuevos usuarios
+
+### 📊 **Dashboard Estilo Excel**
+- Tabla editable en tiempo real
+- Estadísticas dinámicas
 - Filtros y búsqueda avanzada
-- Estados de proceso visuales
+- Acciones rápidas contextuales
 
-### 📝 Gestión de Postulaciones
-- Modal completo para crear/editar postulaciones
-- 5 secciones organizadas: Datos básicos, Proceso & contacto, JD, Seguimiento, CV
-- Validaciones inteligentes
-- Historial de cambios
+### 📝 **Gestión Integral de Postulaciones**
+- Modal completo de 5 secciones:
+  - Información básica
+  - Detalles del proceso
+  - Seguimiento y fechas
+  - Documentos adjuntos
+  - Notas y comentarios
+- Validación de formularios
+- Manejo de archivos
 
-### 🤖 Adaptación de CV con IA
-- Análisis automático de palabras clave del JD
-- Sugerencias inteligentes de mejora
-- Indicador de cobertura de keywords
-- Preview en tiempo real
+### 🤖 **Adaptación de CV con IA**
+- Análisis de palabras clave
+- Sugerencias de personalización
+- Múltiples versiones de CV
+- Exportación optimizada
 
-### 📁 Gestión de CVs
-- Subida de CVs base (PDF, DOC, DOCX)
-- Creación de versiones adaptadas
-- Sistema de versionado
-- Exportación y descarga
-
-### 👤 Perfil y Configuraciones
+### 👤 **Gestión de Perfil**
+- Configuración de usuario
+- Preferencias de aplicación
+- Configuración de notificaciones
 - Gestión de datos personales
-- Preferencias de notificaciones
-- Selector de idioma (ES/PT/EN)
-- Exportación de datos
-- Eliminación segura de cuenta
 
-## 🛠️ Tecnologías
+## 🛠️ Stack Tecnológico
 
-- **Frontend**: Next.js 14, React 18, TypeScript
-- **Styling**: Tailwind CSS
-- **UI Components**: Headless UI, Heroicons
-- **Forms**: React Hook Form
-- **State Management**: React Context
-- **Date Handling**: date-fns
-- **Animations**: Framer Motion
+| Categoría | Tecnología | Versión |
+|-----------|------------|---------|
+| **Frontend** | Next.js | 14.0.4 |
+| **Lenguaje** | TypeScript | 5.0+ |
+| **UI Framework** | React | 18.0+ |
+| **Styling** | Tailwind CSS | 3.0+ |
+| **Componentes** | Headless UI | 1.7+ |
+| **Iconos** | Heroicons | 2.0+ |
+| **Estado** | React Context API | - |
+| **Formularios** | React Hook Form | 7.0+ |
+| **Fechas** | date-fns | 2.30+ |
+| **IDs** | uuid | 9.0+ |
 
-## 🚀 Instalación y Desarrollo
+## 🚀 Instalación y Configuración
 
 ### Prerrequisitos
-- Node.js 18+ 
-- npm o yarn
+- Node.js 18.0 o superior
+- npm 9.0 o superior
+- Python 3.8+ (para servidor de desarrollo)
 
-### Instalación
+### Instalación Rápida
+
 ```bash
-# Clonar el repositorio
-git clone <repository-url>
+# 1. Clonar el repositorio
+git clone https://github.com/viernesenvenus/jobs-tracker.git
 cd jobs-tracker
 
-# Instalar dependencias
+# 2. Instalar dependencias
 npm install
 
-# Ejecutar en modo desarrollo
-npm run dev
+# 3. Ejecutar servidor de desarrollo
+python3 server.py
 ```
 
-### Scripts Disponibles
+### Instalación Manual
+
 ```bash
-npm run dev      # Servidor de desarrollo
-npm run build    # Build para producción
-npm run start    # Servidor de producción
-npm run lint     # Linter
+# 1. Instalar dependencias
+npm install
+
+# 2. Iniciar servidor de desarrollo
+npm run dev
+
+# 3. Abrir en el navegador
+open http://localhost:3000
 ```
 
 ## 📁 Estructura del Proyecto
 
 ```
 jobs-tracker/
-├── app/                    # App Router de Next.js
-│   ├── dashboard/         # Dashboard principal
-│   ├── cvs/              # Gestión de CVs
-│   ├── profile/          # Perfil de usuario
-│   ├── onboarding/       # Wizard de onboarding
-│   └── globals.css       # Estilos globales
-├── components/            # Componentes reutilizables
-│   ├── modals/           # Modales específicos
-│   ├── Header.tsx        # Header global
-│   ├── Footer.tsx        # Footer global
+├── 📁 app/                          # Next.js App Router
+│   ├── 📄 page.tsx                 # Landing page principal
+│   ├── 📄 layout.tsx               # Layout global
+│   ├── 📄 globals.css              # Estilos globales
+│   ├── 📁 dashboard/               # Dashboard principal
+│   ├── 📁 onboarding/              # Wizard de configuración
+│   ├── 📁 cvs/                     # Gestión de CVs
+│   └── 📁 profile/                 # Perfil de usuario
+├── 📁 components/                   # Componentes reutilizables
+│   ├── 📁 modals/                  # Modales especializados
+│   │   ├── ApplicationModal.tsx    # Modal de postulaciones
+│   │   ├── CVAdaptationModal.tsx   # Modal de adaptación IA
+│   │   ├── FollowUpModal.tsx       # Modal de seguimiento
+│   │   └── ...
+│   ├── Header.tsx                  # Header global
+│   ├── Footer.tsx                  # Footer global
+│   ├── DashboardTable.tsx          # Tabla principal
 │   └── ...
-├── contexts/             # Contextos de React
-│   ├── AuthContext.tsx   # Autenticación
-│   ├── ToastContext.tsx  # Notificaciones
-│   └── ModalContext.tsx  # Gestión de modales
-├── types/                # Definiciones TypeScript
-└── ...
+├── 📁 contexts/                     # Contextos de React
+│   ├── AuthContext.tsx             # Autenticación
+│   ├── ToastContext.tsx            # Notificaciones
+│   └── ModalContext.tsx            # Gestión de modales
+├── 📁 types/                        # Definiciones TypeScript
+│   └── index.ts                    # Interfaces principales
+├── 📄 package.json                 # Dependencias y scripts
+├── 📄 tailwind.config.js           # Configuración Tailwind
+├── 📄 next.config.js               # Configuración Next.js
+├── 📄 tsconfig.json                # Configuración TypeScript
+└── 📄 server.py                    # Servidor de desarrollo Python
 ```
 
-## 🎨 Diseño y UX
+## 🎨 Características de Diseño
 
-### Principios de Diseño
-- **Excel-like**: Tabla editable inline para gestión rápida
-- **Modal-first**: Formularios complejos en modales organizados
-- **Progressive Disclosure**: Información mostrada por capas
-- **Feedback Inmediato**: Toasts y validaciones en tiempo real
+### **Landing Page**
+- **Header mínimo**: Logo + tagline + CTAs
+- **Hero impactante**: "Organiza tu búsqueda laboral. Destaca en cada postulación."
+- **Mockup realista**: Dashboard funcional con datos de ejemplo
+- **Validación social**: Logos de empresas LATAM (Rappi, Mercado Libre, etc.)
+- **Footer informativo**: Links legales + microcopy regional
 
-### Paleta de Colores
-- **Primary**: Azul (#3b82f6)
-- **Success**: Verde (#10b981)
-- **Warning**: Amarillo (#f59e0b)
-- **Error**: Rojo (#ef4444)
-- **Gray Scale**: 50-900
+### **Dashboard**
+- **Tabla Excel-like**: Edición inline, filtros, búsqueda
+- **Estadísticas en tiempo real**: Postulaciones, entrevistas, ofertas
+- **Estados visuales**: Colores y badges para cada fase
+- **Acciones rápidas**: Botones contextuales para tareas comunes
 
-### Componentes Clave
-- **DashboardTable**: Tabla editable con validaciones
-- **ApplicationModal**: Modal de 5 secciones para postulaciones
-- **CVAdaptationModal**: Interfaz de adaptación con IA
-- **ToastContainer**: Sistema de notificaciones
-- **EmptyState**: Estados vacíos con CTAs
+### **Responsive Design**
+- **Mobile-first**: Optimizado para dispositivos móviles
+- **Breakpoints**: sm, md, lg, xl, 2xl
+- **Touch-friendly**: Botones y elementos táctiles
+- **Performance**: Carga rápida en todas las conexiones
 
-## 🔧 Configuración
+## 🔧 Scripts Disponibles
 
-### Variables de Entorno
-```env
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-# Añadir variables de base de datos y APIs según necesidad
+```bash
+# Desarrollo
+npm run dev          # Servidor de desarrollo
+npm run build        # Build de producción
+npm run start        # Servidor de producción
+npm run lint         # Linting de código
+
+# Utilidades
+python3 server.py    # Servidor completo con auto-instalación
 ```
 
-### Personalización
-- Modifica `tailwind.config.js` para personalizar colores
-- Ajusta `types/index.ts` para cambiar modelos de datos
-- Configura contextos en `contexts/` para lógica de negocio
+## 🌟 Credenciales de Prueba
 
-## 📱 Responsive Design
+Para probar la aplicación, usa estas credenciales:
 
-La aplicación está optimizada para:
-- **Desktop**: Experiencia completa con todas las funcionalidades
-- **Tablet**: Layout adaptado con navegación colapsable
-- **Mobile**: Interfaz simplificada con modales optimizados
+- **Email**: `test@jobstracker.com`
+- **Contraseña**: `123456`
 
-## 🚀 Próximas Funcionalidades
+## 🚀 Despliegue
 
-### MVP2 (Planificado)
-- [ ] Integración con APIs reales
-- [ ] Base de datos persistente
-- [ ] Notificaciones por email
-- [ ] Integración con LinkedIn
-- [ ] Analytics avanzados
+### Vercel (Recomendado)
+```bash
+# 1. Instalar Vercel CLI
+npm i -g vercel
 
-### MVP3 (Futuro)
-- [ ] Colaboración en equipo
-- [ ] Templates de CV
-- [ ] Integración con ATS
-- [ ] Dashboard de métricas avanzadas
+# 2. Desplegar
+vercel
+
+# 3. Configurar variables de entorno si es necesario
+```
+
+### Netlify
+```bash
+# 1. Build del proyecto
+npm run build
+
+# 2. Subir carpeta 'out' a Netlify
+# 3. Configurar redirects para SPA
+```
+
+### Docker
+```dockerfile
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+RUN npm run build
+EXPOSE 3000
+CMD ["npm", "start"]
+```
 
 ## 🤝 Contribución
 
@@ -165,16 +225,44 @@ La aplicación está optimizada para:
 4. Push a la rama (`git push origin feature/AmazingFeature`)
 5. Abre un Pull Request
 
+## 📝 Roadmap
+
+### **MVP2** (Próximas versiones)
+- [ ] Integración con APIs de empleo (LinkedIn, Indeed)
+- [ ] Notificaciones por email/SMS
+- [ ] Dashboard de analytics avanzado
+- [ ] Colaboración en equipo
+- [ ] Integración con calendarios
+- [ ] App móvil nativa
+
+### **Futuro**
+- [ ] IA para matching de ofertas
+- [ ] Integración con ATS
+- [ ] Marketplace de CVs
+- [ ] Red social profesional
+- [ ] Certificaciones y cursos
+
 ## 📄 Licencia
 
-Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para detalles.
+Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para más detalles.
 
-## 📞 Soporte
+## 👥 Equipo
 
-Para soporte o preguntas:
-- Email: soporte@jobstracker.com
-- Issues: [GitHub Issues](https://github.com/username/jobs-tracker/issues)
+- **Desarrollo**: [viernesenvenus](https://github.com/viernesenvenus)
+- **Diseño**: Inspirado en Simplify y mejores prácticas UX
+- **Mercado objetivo**: Profesionales y estudiantes LATAM
+
+## 📞 Contacto
+
+- **GitHub**: [viernesenvenus/jobs-tracker](https://github.com/viernesenvenus/jobs-tracker)
+- **Issues**: [Reportar bugs o sugerencias](https://github.com/viernesenvenus/jobs-tracker/issues)
 
 ---
 
-**Jobs Tracker** - Organiza tu búsqueda laboral, destaca en cada postulación. 🚀
+<div align="center">
+
+**⭐ Si te gusta el proyecto, ¡dale una estrella! ⭐**
+
+*Hecho con ❤️ para la comunidad de desarrolladores LATAM*
+
+</div>

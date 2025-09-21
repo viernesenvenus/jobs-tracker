@@ -66,9 +66,13 @@ export function DashboardTable({
     const { rowId, columnKey } = editingCell;
 
     if (columnKey === 'applicationDate' || columnKey === 'firstInterviewDate') {
-      updates[columnKey as keyof JobApplication] = new Date(editValue);
+      if (columnKey === 'applicationDate') {
+        updates.applicationDate = new Date(editValue);
+      } else if (columnKey === 'firstInterviewDate') {
+        updates.firstInterviewDate = new Date(editValue);
+      }
     } else {
-      updates[columnKey as keyof JobApplication] = editValue;
+      (updates as any)[columnKey] = editValue;
     }
 
     onUpdate(rowId, updates);
