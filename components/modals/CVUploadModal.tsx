@@ -74,10 +74,15 @@ export function CVUploadModal({ isOpen, onClose, onConfirm }: CVUploadModalProps
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('📂 Cambio de archivo detectado:', e.target.files);
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      console.log('📄 Archivo seleccionado:', file.name, file.size, file.type);
       if (isValidFile(file)) {
         setValue('name', file.name.replace(/\.[^/.]+$/, ''));
+        console.log('✅ Archivo válido, nombre establecido');
+      } else {
+        console.log('❌ Archivo inválido');
       }
     }
   };
@@ -99,10 +104,12 @@ export function CVUploadModal({ isOpen, onClose, onConfirm }: CVUploadModalProps
 
   const onSubmit = async (formData: FormData) => {
     try {
+      console.log('🚀 Iniciando subida de CV:', formData);
       setIsUploading(true);
       setUploadProgress(0);
 
       const file = formData.file[0];
+      console.log('📁 Archivo seleccionado:', file);
       
       // Simulate upload progress
       await simulateUpload(file);
@@ -115,11 +122,13 @@ export function CVUploadModal({ isOpen, onClose, onConfirm }: CVUploadModalProps
         type: 'base'
       };
 
+      console.log('✅ Datos del CV preparados:', cvData);
       onConfirm(cvData);
       showSuccess('CV subido exitosamente', 'El CV se ha subido y está listo para usar.');
       reset();
       setUploadProgress(0);
     } catch (error) {
+      console.error('❌ Error al subir CV:', error);
       showError('Error al subir', 'No se pudo subir el CV. Intenta nuevamente.');
     } finally {
       setIsUploading(false);

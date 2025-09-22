@@ -1,0 +1,54 @@
+CURRICULUM VITAE - LUCIA CRUZ
+
+DATOS PERSONALES
+Nombre: Lucía Cruz
+Email: lucia.cruz@email.com
+Teléfono: +51 987 654 321
+LinkedIn: linkedin.com/in/luciacruz
+Ubicación: Lima, Perú
+
+PERFIL PROFESIONAL
+Desarrolladora Frontend con 3 años de experiencia en React, Next.js y TypeScript. 
+Especializada en crear interfaces de usuario modernas y responsivas. 
+Apasionada por la tecnología y el diseño centrado en el usuario.
+
+EXPERIENCIA LABORAL
+
+Desarrolladora Frontend Senior - TechCorp (2022 - Presente)
+• Desarrollo de aplicaciones web con React y Next.js
+• Implementación de componentes reutilizables con TypeScript
+• Colaboración con equipos de diseño y backend
+• Optimización de rendimiento y SEO
+
+Desarrolladora Frontend - StartupXYZ (2021 - 2022)
+• Creación de interfaces de usuario responsivas
+• Integración con APIs REST y GraphQL
+• Trabajo con metodologías ágiles (Scrum)
+• Participación en code reviews y pair programming
+
+EDUCACIÓN
+Ingeniería de Sistemas - Universidad Nacional de Ingeniería (2018 - 2022)
+• Especialización en Desarrollo Web
+• Proyecto de tesis: "Aplicación web para gestión de tareas"
+
+HABILIDADES TÉCNICAS
+• Frontend: React, Next.js, TypeScript, JavaScript, HTML5, CSS3
+• Styling: Tailwind CSS, Styled Components, Sass
+• Herramientas: Git, Webpack, Vite, npm, yarn
+• Testing: Jest, React Testing Library, Cypress
+• Backend: Node.js, Express, MongoDB (básico)
+
+PROYECTOS DESTACADOS
+• E-commerce Platform: Aplicación completa con carrito de compras
+• Dashboard Analytics: Visualización de datos en tiempo real
+• Portfolio Personal: Sitio web responsive con animaciones
+
+IDIOMAS
+• Español: Nativo
+• Inglés: Avanzado (TOEFL 95)
+• Portugués: Intermedio
+
+CERTIFICACIONES
+• AWS Cloud Practitioner (2023)
+• Google Analytics Certified (2022)
+• Scrum Master (2021)
