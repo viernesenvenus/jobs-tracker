@@ -15,7 +15,7 @@ interface CVAdaptationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (data: any) => void;
-  data?: { cvId: string; jobApplicationId: string };
+  data?: { cvId: string; cvName: string };
 }
 
 interface CVSuggestion {
@@ -33,13 +33,29 @@ export function CVAdaptationModal({ isOpen, onClose, onConfirm, data }: CVAdapta
   const [isLoading, setIsLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<CVSuggestion[]>([]);
   const [coverage, setCoverage] = useState(75);
-  const [keywords] = useState(['React', 'JavaScript', 'TypeScript', 'CSS', 'HTML', 'Node.js', 'Git', 'Agile']);
+  const [keywords, setKeywords] = useState<string[]>([]);
+  const [jobDescription, setJobDescription] = useState('');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   
   const { showSuccess, showError } = useToast();
 
-  // Mock suggestions data
-  React.useEffect(() => {
-    if (isOpen) {
+  const analyzeJobDescription = async () => {
+    if (!jobDescription.trim()) {
+      showError('Error', 'Por favor ingresa la descripción del trabajo.');
+      return;
+    }
+
+    try {
+      setIsAnalyzing(true);
+      
+      // Simular análisis de IA
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Extraer keywords de la descripción (simulado)
+      const extractedKeywords = ['React', 'JavaScript', 'TypeScript', 'CSS', 'HTML', 'Node.js', 'Git', 'Agile'];
+      setKeywords(extractedKeywords);
+      
+      // Generar sugerencias (simulado)
       setSuggestions([
         {
           id: '1',
@@ -67,8 +83,15 @@ export function CVAdaptationModal({ isOpen, onClose, onConfirm, data }: CVAdapta
           confidence: 92
         }
       ]);
+      
+      setCoverage(75);
+      showSuccess('Análisis completado', 'Se han generado sugerencias basadas en la descripción del trabajo.');
+    } catch (error) {
+      showError('Error', 'No se pudo analizar la descripción del trabajo.');
+    } finally {
+      setIsAnalyzing(false);
     }
-  }, [isOpen]);
+  };
 
   const handleAcceptSuggestion = (suggestionId: string) => {
     setSuggestions(prev => 
@@ -90,16 +113,21 @@ export function CVAdaptationModal({ isOpen, onClose, onConfirm, data }: CVAdapta
       const acceptedSuggestions = suggestions.filter(s => s.accepted);
       const adaptedCVData = {
         cvId: data?.cvId,
-        jobApplicationId: data?.jobApplicationId,
+        cvName: data?.cvName,
+        jobDescription,
         suggestions: acceptedSuggestions,
         coverage,
-        keywords
+        keywords,
+        fileName: `${data?.cvName?.replace('.pdf', '')}_Adaptado_${new Date().toISOString().split('T')[0]}.pdf`
       };
 
+      // Simular generación de PDF
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
       onConfirm(adaptedCVData);
-      showSuccess('CV adaptado guardado', 'El CV adaptado se ha guardado exitosamente.');
+      showSuccess('CV adaptado generado', 'El CV adaptado se ha generado y guardado exitosamente como PDF.');
     } catch (error) {
-      showError('Error', 'No se pudo guardar el CV adaptado.');
+      showError('Error', 'No se pudo generar el CV adaptado.');
     } finally {
       setIsLoading(false);
     }
@@ -135,7 +163,38 @@ export function CVAdaptationModal({ isOpen, onClose, onConfirm, data }: CVAdapta
 
         {/* Content */}
         <div className="p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Job Description Input */}
+          <div className="mb-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-3">Descripción del trabajo</h3>
+            <div className="space-y-3">
+              <textarea
+                value={jobDescription}
+                onChange={(e) => setJobDescription(e.target.value)}
+                placeholder="Pega aquí la descripción completa del trabajo al que te postulas..."
+                className="w-full h-32 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+              />
+              <button
+                onClick={analyzeJobDescription}
+                disabled={!jobDescription.trim() || isAnalyzing}
+                className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+              >
+                {isAnalyzing ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Analizando...</span>
+                  </>
+                ) : (
+                  <>
+                    <SparklesIcon className="w-4 h-4" />
+                    <span>Analizar con IA</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {keywords.length > 0 && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* JD Keywords Panel */}
             <div className="space-y-4">
               <h3 className="text-lg font-medium text-gray-900">Palabras clave del JD</h3>
@@ -162,13 +221,13 @@ export function CVAdaptationModal({ isOpen, onClose, onConfirm, data }: CVAdapta
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                 <div className="space-y-3">
                   <div className="text-sm">
-                    <strong>Nombre del archivo:</strong> CV_Maria_Garcia.pdf
+                    <strong>Nombre del archivo:</strong> {data?.cvName || 'CV_Base.pdf'}
                   </div>
                   <div className="text-sm">
                     <strong>Última actualización:</strong> 15/01/2024
                   </div>
                   <div className="text-sm">
-                    <strong>Procesos asociados:</strong> 3
+                    <strong>Tipo:</strong> CV Base
                   </div>
                 </div>
                 <div className="mt-4 flex space-x-2">
@@ -204,8 +263,10 @@ export function CVAdaptationModal({ isOpen, onClose, onConfirm, data }: CVAdapta
               </div>
             </div>
           </div>
+          )}
 
           {/* Suggestions */}
+          {suggestions.length > 0 && (
           <div className="mt-8">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Sugerencias de mejora</h3>
             <div className="space-y-4">
@@ -292,6 +353,7 @@ export function CVAdaptationModal({ isOpen, onClose, onConfirm, data }: CVAdapta
               ))}
             </div>
           </div>
+          )}
 
           {/* Actions */}
           <div className="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-200">
@@ -303,7 +365,7 @@ export function CVAdaptationModal({ isOpen, onClose, onConfirm, data }: CVAdapta
             </button>
             <button
               onClick={handleSaveAdaptedCV}
-              disabled={isLoading}
+              disabled={isLoading || suggestions.length === 0}
               className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
             >
               {isLoading ? (
@@ -311,7 +373,7 @@ export function CVAdaptationModal({ isOpen, onClose, onConfirm, data }: CVAdapta
               ) : (
                 <>
                   <SparklesIcon className="w-4 h-4" />
-                  <span>Guardar CV adaptado</span>
+                  <span>Generar CV adaptado (PDF)</span>
                 </>
               )}
             </button>

@@ -53,9 +53,6 @@ export function CVTable({ cvs, onDelete, onExport, onAdapt }: CVTableProps) {
                 Tipo
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Procesos asociados
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Cobertura
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -101,9 +98,6 @@ export function CVTable({ cvs, onDelete, onExport, onAdapt }: CVTableProps) {
                   </span>
                 </td>
 
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {cv.type === 'adapted' && cv.jobApplicationId ? '1 proceso' : '0 procesos'}
-                </td>
 
                 <td className="px-6 py-4 whitespace-nowrap">
                   {cv.type === 'adapted' && cv.coverage ? (

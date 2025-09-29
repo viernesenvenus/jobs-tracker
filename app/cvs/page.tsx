@@ -11,7 +11,8 @@ import { CVUploadModal } from '@/components/modals/CVUploadModal';
 import { 
   PlusIcon, 
   DocumentTextIcon,
-  CloudArrowUpIcon
+  CloudArrowUpIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline';
 
 // Mock data for development
@@ -103,16 +104,24 @@ export default function CVsPage() {
       id: Date.now().toString(),
       userId: user?.id || '1',
       name: cvData.name || 'Nuevo CV',
-      type: 'base',
+      type: cvData.type || 'base',
       filePath: cvData.filePath || '',
       fileName: cvData.fileName || '',
       fileSize: cvData.fileSize || 0,
+      keywords: cvData.keywords || [],
+      coverage: cvData.coverage || 0,
       createdAt: new Date(),
       updatedAt: new Date()
     };
 
     setCvs(prev => [newCV, ...prev]);
-    showSuccess('CV subido', 'El CV se ha subido exitosamente.');
+    
+    if (cvData.type === 'adapted') {
+      showSuccess('CV adaptado guardado', 'El CV adaptado se ha guardado exitosamente en tu lista.');
+    } else {
+      showSuccess('CV subido', 'El CV se ha subido exitosamente.');
+    }
+    
     setShowUploadModal(false);
   };
 
@@ -127,16 +136,82 @@ export default function CVsPage() {
 
   const handleExportCV = async (cvId: string) => {
     try {
-      // Simulate export
-      showSuccess('CV exportado', 'El CV se ha descargado exitosamente.');
+      const cv = cvs.find(c => c.id === cvId);
+      if (!cv) {
+        showError('Error', 'CV no encontrado.');
+        return;
+      }
+
+      // Crear contenido del CV para descarga
+      const cvContent = `
+CV - ${cv.name}
+=====================================
+
+INFORMACIÓN DEL ARCHIVO
+Nombre: ${cv.fileName}
+Tipo: ${cv.type === 'base' ? 'CV Base' : 'CV Adaptado'}
+Tamaño: ${(cv.fileSize / 1024 / 1024).toFixed(2)} MB
+Fecha de creación: ${cv.createdAt.toLocaleDateString()}
+Última actualización: ${cv.updatedAt.toLocaleDateString()}
+
+${cv.type === 'adapted' ? `
+MÉTRICAS DE ADAPTACIÓN
+Cobertura de keywords: ${cv.coverage}%
+Keywords identificadas: ${cv.keywords?.length || 0}
+
+PALABRAS CLAVE
+${cv.keywords?.map((keyword: string) => `• ${keyword}`).join('\n') || 'No se identificaron keywords'}
+` : ''}
+
+=====================================
+Generado por Jobs Tracker
+${new Date().toLocaleString()}
+      `;
+
+      // Crear y descargar archivo
+      const blob = new Blob([cvContent], { type: 'text/plain;charset=utf-8' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${cv.fileName}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      showSuccess('CV descargado', 'El CV se ha descargado exitosamente.');
     } catch (error) {
-      showError('Error', 'No se pudo exportar el CV.');
+      showError('Error', 'No se pudo descargar el CV.');
     }
   };
 
   const handleAdaptCV = (cvId: string) => {
-    // This would open the CV adaptation modal
-    showSuccess('Adaptar CV', 'Redirigiendo a la adaptación de CV...');
+    const cv = cvs.find(c => c.id === cvId);
+    if (cv && cv.type === 'base') {
+      setShowUploadModal(true);
+    } else {
+      showError('Error', 'Solo se pueden adaptar CVs base.');
+    }
+  };
+
+  const handleCVAdapted = (adaptedData: any) => {
+    // Crear nuevo CV adaptado
+    const newAdaptedCV: CV = {
+      id: Date.now().toString(),
+      userId: user?.id || '1',
+      name: adaptedData.name || adaptedData.fileName || 'CV_Adaptado',
+      type: 'adapted',
+      filePath: adaptedData.filePath || `/cvs/${adaptedData.fileName}`,
+      fileName: adaptedData.fileName,
+      fileSize: adaptedData.fileSize || 250000,
+      keywords: adaptedData.keywords || [],
+      coverage: adaptedData.coverage || 0,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    setCvs(prev => [newAdaptedCV, ...prev]);
+    showSuccess('CV adaptado generado', 'El CV adaptado se ha generado exitosamente.');
   };
 
   const filteredCVs = cvs.filter(cv => {
@@ -148,12 +223,6 @@ export default function CVsPage() {
     return matchesFilter && matchesSearch;
   });
 
-  const stats = {
-    total: cvs.length,
-    base: cvs.filter(cv => cv.type === 'base').length,
-    adapted: cvs.filter(cv => cv.type === 'adapted').length,
-    averageCoverage: cvs.filter(cv => cv.type === 'adapted').reduce((sum, cv) => sum + (cv.coverage || 0), 0) / Math.max(cvs.filter(cv => cv.type === 'adapted').length, 1)
-  };
 
   if (isLoading) {
     return (
@@ -162,14 +231,6 @@ export default function CVsPage() {
           <div className="animate-pulse">
             <div className="h-8 bg-gray-200 rounded w-64 mb-6"></div>
             <div className="h-4 bg-gray-200 rounded w-96 mb-8"></div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="bg-white p-6 rounded-lg shadow">
-                  <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
-                  <div className="h-8 bg-gray-200 rounded w-16"></div>
-                </div>
-              ))}
-            </div>
             <div className="bg-white rounded-lg shadow">
               <div className="h-12 bg-gray-200 rounded-t-lg"></div>
               <div className="p-6">
@@ -202,62 +263,12 @@ export default function CVsPage() {
               onClick={handleUploadCV}
               className="btn-primary flex items-center space-x-2"
             >
-              <CloudArrowUpIcon className="w-5 h-5" />
-              <span>Subir CV base</span>
+              <SparklesIcon className="w-5 h-5" />
+              <span>Adaptar CV</span>
             </button>
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="p-3 rounded-lg bg-blue-100">
-                <DocumentTextIcon className="w-6 h-6 text-blue-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total CVs</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="p-3 rounded-lg bg-green-100">
-                <DocumentTextIcon className="w-6 h-6 text-green-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">CVs Base</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.base}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="p-3 rounded-lg bg-purple-100">
-                <DocumentTextIcon className="w-6 h-6 text-purple-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">CVs Adaptados</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.adapted}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="p-3 rounded-lg bg-orange-100">
-                <DocumentTextIcon className="w-6 h-6 text-orange-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Cobertura Promedio</p>
-                <p className="text-2xl font-bold text-gray-900">{Math.round(stats.averageCoverage)}%</p>
-              </div>
-            </div>
-          </div>
-        </div>
 
         {/* Filters and Search */}
         <div className="bg-white rounded-lg shadow mb-6 p-6">
@@ -311,6 +322,7 @@ export default function CVsPage() {
             onConfirm={handleCVUploaded}
           />
         )}
+
       </div>
     </div>
   );
