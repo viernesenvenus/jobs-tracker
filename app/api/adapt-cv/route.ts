@@ -18,14 +18,10 @@ export async function POST(request: NextRequest) {
     
     // Agregar el archivo CV como archivo binario
     if (cvFile?.data) {
-      // Convertir base64 a Blob
+      // Convertir base64 a Blob usando Buffer (compatible con Node.js)
       const base64Data = cvFile.data.split(',')[1]; // Remover el prefijo data:application/pdf;base64,
-      const binaryData = atob(base64Data);
-      const bytes = new Uint8Array(binaryData.length);
-      for (let i = 0; i < binaryData.length; i++) {
-        bytes[i] = binaryData.charCodeAt(i);
-      }
-      const blob = new Blob([bytes], { type: cvFile.type || 'application/pdf' });
+      const buffer = Buffer.from(base64Data, 'base64');
+      const blob = new Blob([buffer], { type: cvFile.type || 'application/pdf' });
       formData.append('cv_actual', blob, cvFile.name);
     }
     

@@ -68,6 +68,7 @@ export interface CV {
   fileSize: number;
   keywords?: string[];
   coverage?: number;
+  adaptedContent?: string; // Contenido adaptado del CV
   createdAt: Date;
   updatedAt: Date;
 }
