@@ -49,10 +49,29 @@ export default function RootLayout({
                 console.log('Current hash:', hash);
                 
                 if (hash.includes('access_token')) {
-                  console.log('Access token found, redirecting to dashboard...');
-                  setTimeout(() => {
-                    window.location.href = '/dashboard';
-                  }, 1000);
+                  console.log('Access token found, waiting for Supabase to process...');
+                  
+                  // Wait for Supabase to process the token and then redirect
+                  let attempts = 0;
+                  const maxAttempts = 10;
+                  
+                  const checkAuthAndRedirect = () => {
+                    attempts++;
+                    console.log('Checking auth state, attempt:', attempts);
+                    
+                    // Check if we're authenticated by looking for user data in localStorage
+                    const supabaseData = localStorage.getItem('sb-vgqkegvsdmildcauvfip-auth-token');
+                    
+                    if (supabaseData || attempts >= maxAttempts) {
+                      console.log('Redirecting to dashboard...');
+                      window.location.href = '/dashboard';
+                    } else {
+                      setTimeout(checkAuthAndRedirect, 500);
+                    }
+                  };
+                  
+                  // Start checking after a short delay
+                  setTimeout(checkAuthAndRedirect, 1000);
                 }
               })();
             `,

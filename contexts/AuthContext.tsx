@@ -48,8 +48,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           await loadUserData(session.user);
           
           // Redirect to dashboard if user just signed in
-          if (event === 'SIGNED_IN' && window.location.pathname === '/') {
-            window.location.href = '/dashboard';
+          if (event === 'SIGNED_IN') {
+            // Only redirect if not already on dashboard or cvs pages
+            const currentPath = window.location.pathname;
+            if (currentPath === '/' || currentPath === '/login' || currentPath === '/register') {
+              console.log('Redirecting to dashboard after sign in');
+              window.location.href = '/dashboard';
+            }
           }
         } else {
           setUser(null);
