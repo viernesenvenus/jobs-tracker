@@ -8,7 +8,7 @@ import { CV } from '@/types';
 import { CVTable } from '@/components/CVTable';
 import { EmptyState } from '@/components/EmptyState';
 import { CVUploadModal } from '@/components/modals/CVUploadModal';
-import { CVService } from '@/lib/cvService';
+import { cvService } from '@/lib/cvService';
 import { 
   PlusIcon, 
   DocumentTextIcon,
@@ -45,8 +45,11 @@ export default function CVsPage() {
     
     try {
       setIsLoading(true);
-      const userCVs = await CVService.getCVs(user.id);
-      setCvs(userCVs);
+      const { data: userCVs, error } = await cvService.getCVsByUserId(user.id);
+      if (error) {
+        throw new Error(error.message);
+      }
+      setCvs(userCVs || []);
     } catch (error) {
       console.error('Error loading CVs:', error);
       showError('Error', 'No se pudieron cargar los CVs.');
@@ -60,7 +63,13 @@ export default function CVsPage() {
 
     try {
       // Save to Supabase
-      const success = await CVService.saveCV(user.id, cvData);
+      const { data, error } = await cvService.createCV({
+        ...cvData,
+        userId: user.id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      const success = !error;
       
       if (success) {
         // Update local state
@@ -98,7 +107,7 @@ export default function CVsPage() {
 
   const handleDeleteCV = async (cvId: string) => {
     try {
-      const success = await CVService.deleteCV(cvId);
+      const { data: success, error } = await cvService.deleteCV(cvId);
       
       if (success) {
         setCvs(prev => prev.filter(cv => cv.id !== cvId));
