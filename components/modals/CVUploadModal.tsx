@@ -220,9 +220,9 @@ export function CVUploadModal({ isOpen, onClose, onConfirm }: CVUploadModalProps
         // Crear CV adaptado con los datos de n8n
         const adaptedCVData: Partial<CV> = {
           name: `${watch('name')}_Adaptado`,
-          fileName: `${watch('name')}_Adaptado_${new Date().toISOString().split('T')[0]}.doc`,
+          fileName: result.fileName || `${watch('name')}_Adaptado_${new Date().toISOString().split('T')[0]}.doc`,
           fileSize: adaptedDocument.length || 250000,
-          filePath: `/cvs/${watch('name')}_Adaptado.doc`,
+          filePath: `/cvs/${result.fileName || `${watch('name')}_Adaptado.doc`}`,
           type: 'adapted',
           keywords: extractedKeywords,
           coverage: coverage,
