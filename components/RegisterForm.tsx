@@ -29,15 +29,17 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
 
   const onSubmit = async (data: FormData) => {
     try {
+      console.log('Attempting to register user:', data.email);
       const success = await registerUser(data.email, data.password, data.name);
       if (success) {
         showSuccess('¡Registro exitoso!', 'Tu cuenta ha sido creada correctamente. Revisa tu email para confirmar tu cuenta.');
         onSuccess?.();
       } else {
-        showError('Error', 'No se pudo crear la cuenta. Intenta nuevamente.');
+        showError('Error', 'No se pudo crear la cuenta. Verifica que el email no esté ya registrado y que la contraseña tenga al menos 6 caracteres.');
       }
     } catch (error) {
-      showError('Error', 'Ocurrió un error al crear la cuenta.');
+      console.error('Registration error in form:', error);
+      showError('Error', 'Ocurrió un error al crear la cuenta. Intenta nuevamente.');
     }
   };
 

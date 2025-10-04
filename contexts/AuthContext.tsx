@@ -218,6 +218,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = async (email: string, password: string, name: string): Promise<boolean> => {
     try {
       setIsLoading(true);
+      console.log('Starting registration for:', email);
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -230,12 +232,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) {
-        console.error('Registration error:', error.message);
+        console.error('Registration error:', error);
+        console.error('Error details:', {
+          message: error.message,
+          status: error.status,
+          code: error.code
+        });
         return false;
       }
 
+      console.log('Registration successful:', data);
+
       // Si el usuario se creó exitosamente, crear el perfil
       if (data.user) {
+        console.log('Creating profile for user:', data.user.id);
+        
         const newProfile = {
           id: data.user.id,
           full_name: name,
@@ -247,6 +258,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (profileError) {
           console.error('Error creating profile during registration:', profileError);
+          // No retornamos false aquí porque el usuario ya se creó en Supabase
+        } else {
+          console.log('Profile created successfully');
         }
       }
 
