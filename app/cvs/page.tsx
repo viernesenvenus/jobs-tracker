@@ -121,6 +121,11 @@ export default function CVsPage() {
     }
   };
 
+  const handleAdaptCV = (cvId: string) => {
+    // Abrir el modal de adaptación de CV
+    setShowUploadModal(true);
+  };
+
   const handleExportCV = (cvId: string) => {
     const cv = cvs.find(c => c.id === cvId);
     if (!cv) return;
@@ -243,6 +248,7 @@ export default function CVsPage() {
               cvs={filteredCVs}
               onDelete={handleDeleteCV}
               onExport={handleExportCV}
+              onAdapt={handleAdaptCV}
             />
           </div>
         )}
