@@ -39,6 +39,25 @@ export default function RootLayout({
             </ModalProvider>
           </ToastProvider>
         </AuthProvider>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // OAuth redirect handler
+              (function() {
+                console.log('OAuth redirect script loaded');
+                const hash = window.location.hash;
+                console.log('Current hash:', hash);
+                
+                if (hash.includes('access_token')) {
+                  console.log('Access token found, redirecting to dashboard...');
+                  setTimeout(() => {
+                    window.location.href = '/dashboard';
+                  }, 1000);
+                }
+              })();
+            `,
+          }}
+        />
       </body>
     </html>
   );

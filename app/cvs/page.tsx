@@ -8,6 +8,7 @@ import { CV } from '@/types';
 import { CVTable } from '@/components/CVTable';
 import { EmptyState } from '@/components/EmptyState';
 import { CVUploadModal } from '@/components/modals/CVUploadModal';
+import { CVService } from '@/lib/cvService';
 import { 
   PlusIcon, 
   DocumentTextIcon,
@@ -15,234 +16,143 @@ import {
   SparklesIcon
 } from '@heroicons/react/24/outline';
 
-// Mock data for development
-const mockCVs: CV[] = [
-  {
-    id: '1',
-    userId: '1',
-    name: 'CV_Maria_Garcia_Base.pdf',
-    type: 'base',
-    filePath: '/cvs/CV_Maria_Garcia_Base.pdf',
-    fileName: 'CV_Maria_Garcia_Base.pdf',
-    fileSize: 245760,
-    keywords: ['React', 'JavaScript', 'TypeScript', 'CSS', 'HTML'],
-    coverage: 0,
-    createdAt: new Date('2024-01-10'),
-    updatedAt: new Date('2024-01-10')
-  },
-  {
-    id: '2',
-    userId: '1',
-    name: 'CV_Maria_Garcia_Frontend.pdf',
-    type: 'adapted',
-    originalCvId: '1',
-    jobApplicationId: '1',
-    filePath: '/cvs/CV_Maria_Garcia_Frontend.pdf',
-    fileName: 'CV_Maria_Garcia_Frontend.pdf',
-    fileSize: 267890,
-    keywords: ['React', 'JavaScript', 'TypeScript', 'CSS', 'HTML', 'Node.js', 'Git'],
-    coverage: 85,
-    createdAt: new Date('2024-01-15'),
-    updatedAt: new Date('2024-01-15')
-  },
-  {
-    id: '3',
-    userId: '1',
-    name: 'CV_Maria_Garcia_Product.pdf',
-    type: 'adapted',
-    originalCvId: '1',
-    jobApplicationId: '2',
-    filePath: '/cvs/CV_Maria_Garcia_Product.pdf',
-    fileName: 'CV_Maria_Garcia_Product.pdf',
-    fileSize: 289340,
-    keywords: ['Product Management', 'Agile', 'Scrum', 'User Research', 'Figma'],
-    coverage: 78,
-    createdAt: new Date('2024-01-12'),
-    updatedAt: new Date('2024-01-12')
-  }
-];
-
 export default function CVsPage() {
+  const { user, isLoading: authLoading } = useAuth();
+  const { showSuccess, showError } = useToast();
+  const router = useRouter();
+  
   const [cvs, setCvs] = useState<CV[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [filter, setFilter] = useState<'all' | 'base' | 'adapted'>('all');
-  const [searchTerm, setSearchTerm] = useState('');
 
-  const { user } = useAuth();
-  const { showSuccess, showError } = useToast();
-  const router = useRouter();
-
+  // Redirect if not authenticated
   useEffect(() => {
-    if (!user) {
+    if (!authLoading && !user) {
       router.push('/');
-      return;
     }
+  }, [user, authLoading, router]);
 
-    if (!user.onboardingCompleted) {
-      router.push('/onboarding');
-      return;
+  // Load CVs from Supabase
+  useEffect(() => {
+    if (user) {
+      loadCVs();
     }
+  }, [user]);
 
-    // Simulate loading
-    const loadData = async () => {
+  const loadCVs = async () => {
+    if (!user) return;
+    
+    try {
       setIsLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setCvs(mockCVs);
+      const userCVs = await CVService.getCVs(user.id);
+      setCvs(userCVs);
+    } catch (error) {
+      console.error('Error loading CVs:', error);
+      showError('Error', 'No se pudieron cargar los CVs.');
+    } finally {
       setIsLoading(false);
-    };
-
-    loadData();
-  }, [user, router]);
-
-  const handleUploadCV = () => {
-    setShowUploadModal(true);
+    }
   };
 
-  const handleCVUploaded = (cvData: Partial<CV>) => {
-    const newCV: CV = {
-      id: Date.now().toString(),
-      userId: user?.id || '1',
-      name: cvData.name || 'Nuevo CV',
-      type: cvData.type || 'base',
-      filePath: cvData.filePath || '',
-      fileName: cvData.fileName || '',
-      fileSize: cvData.fileSize || 0,
-      keywords: cvData.keywords || [],
-      coverage: cvData.coverage || 0,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
+  const handleCVUploaded = async (cvData: Partial<CV>) => {
+    if (!user) return;
 
-    setCvs(prev => [newCV, ...prev]);
-    
-    if (cvData.type === 'adapted') {
-      showSuccess('CV adaptado guardado', 'El CV adaptado se ha guardado exitosamente en tu lista.');
-    } else {
-      showSuccess('CV subido', 'El CV se ha subido exitosamente.');
+    try {
+      // Save to Supabase
+      const success = await CVService.saveCV(user.id, cvData);
+      
+      if (success) {
+        // Update local state
+        const newCV: CV = {
+          id: Date.now().toString(),
+          userId: user.id,
+          name: cvData.name || 'Nuevo CV',
+          type: cvData.type || 'base',
+          filePath: cvData.filePath || '',
+          fileName: cvData.fileName || '',
+          fileSize: cvData.fileSize || 0,
+          keywords: cvData.keywords || [],
+          coverage: cvData.coverage || 0,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+
+        setCvs(prev => [newCV, ...prev]);
+        
+        if (cvData.type === 'adapted') {
+          showSuccess('CV adaptado guardado', 'El CV adaptado se ha guardado exitosamente en tu lista.');
+        } else {
+          showSuccess('CV subido', 'El CV se ha subido exitosamente.');
+        }
+        
+        setShowUploadModal(false);
+      } else {
+        showError('Error', 'No se pudo guardar el CV.');
+      }
+    } catch (error) {
+      console.error('Error saving CV:', error);
+      showError('Error', 'Error al guardar el CV.');
     }
-    
-    setShowUploadModal(false);
   };
 
   const handleDeleteCV = async (cvId: string) => {
     try {
-      setCvs(prev => prev.filter(cv => cv.id !== cvId));
-      showSuccess('CV eliminado', 'El CV ha sido eliminado exitosamente.');
+      const success = await CVService.deleteCV(cvId);
+      
+      if (success) {
+        setCvs(prev => prev.filter(cv => cv.id !== cvId));
+        showSuccess('CV eliminado', 'El CV ha sido eliminado correctamente.');
+      } else {
+        showError('Error', 'No se pudo eliminar el CV.');
+      }
     } catch (error) {
-      showError('Error', 'No se pudo eliminar el CV.');
+      console.error('Error deleting CV:', error);
+      showError('Error', 'Error al eliminar el CV.');
     }
   };
 
-  const handleExportCV = async (cvId: string) => {
-    try {
-      const cv = cvs.find(c => c.id === cvId);
-      if (!cv) {
-        showError('Error', 'CV no encontrado.');
-        return;
-      }
+  const handleExportCV = (cvId: string) => {
+    const cv = cvs.find(c => c.id === cvId);
+    if (!cv) return;
 
-      // Crear contenido del CV para descarga
-      const cvContent = `
-CV - ${cv.name}
-=====================================
-
-INFORMACIÓN DEL ARCHIVO
-Nombre: ${cv.fileName}
-Tipo: ${cv.type === 'base' ? 'CV Base' : 'CV Adaptado'}
-Tamaño: ${(cv.fileSize / 1024 / 1024).toFixed(2)} MB
-Fecha de creación: ${cv.createdAt.toLocaleDateString()}
-Última actualización: ${cv.updatedAt.toLocaleDateString()}
-
-${cv.type === 'adapted' ? `
-MÉTRICAS DE ADAPTACIÓN
-Cobertura de keywords: ${cv.coverage}%
-Keywords identificadas: ${cv.keywords?.length || 0}
-
-PALABRAS CLAVE
-${cv.keywords?.map((keyword: string) => `• ${keyword}`).join('\n') || 'No se identificaron keywords'}
-` : ''}
-
-=====================================
-Generado por Jobs Tracker
-${new Date().toLocaleString()}
-      `;
-
-      // Crear y descargar archivo
-      const blob = new Blob([cvContent], { type: 'text/plain;charset=utf-8' });
+    // If it's an adapted CV with content, download it
+    if (cv.type === 'adapted' && cv.adaptedContent) {
+      const blob = new Blob([cv.adaptedContent], { type: 'application/msword;charset=utf-8' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${cv.fileName}`;
+      link.download = cv.fileName || 'CV_adaptado.doc';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-
-      showSuccess('CV descargado', 'El CV se ha descargado exitosamente.');
-    } catch (error) {
-      showError('Error', 'No se pudo descargar el CV.');
-    }
-  };
-
-  const handleAdaptCV = (cvId: string) => {
-    const cv = cvs.find(c => c.id === cvId);
-    if (cv && cv.type === 'base') {
-      setShowUploadModal(true);
+      
+      showSuccess('Descarga iniciada', 'El CV se está descargando.');
     } else {
-      showError('Error', 'Solo se pueden adaptar CVs base.');
+      // For base CVs or adapted CVs without content, show a message
+      showError('Error', 'No hay contenido disponible para descargar este CV.');
     }
-  };
-
-  const handleCVAdapted = (adaptedData: any) => {
-    // Crear nuevo CV adaptado
-    const newAdaptedCV: CV = {
-      id: Date.now().toString(),
-      userId: user?.id || '1',
-      name: adaptedData.name || adaptedData.fileName || 'CV_Adaptado',
-      type: 'adapted',
-      filePath: adaptedData.filePath || `/cvs/${adaptedData.fileName}`,
-      fileName: adaptedData.fileName,
-      fileSize: adaptedData.fileSize || 250000,
-      keywords: adaptedData.keywords || [],
-      coverage: adaptedData.coverage || 0,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-
-    setCvs(prev => [newAdaptedCV, ...prev]);
-    showSuccess('CV adaptado generado', 'El CV adaptado se ha generado exitosamente.');
   };
 
   const filteredCVs = cvs.filter(cv => {
-    const matchesFilter = filter === 'all' || cv.type === filter;
-    const matchesSearch = searchTerm === '' || 
-      cv.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      cv.fileName.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    return matchesFilter && matchesSearch;
+    if (filter === 'all') return true;
+    return cv.type === filter;
   });
 
-
-  if (isLoading) {
+  if (authLoading || isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-64 mb-6"></div>
-            <div className="h-4 bg-gray-200 rounded w-96 mb-8"></div>
-            <div className="bg-white rounded-lg shadow">
-              <div className="h-12 bg-gray-200 rounded-t-lg"></div>
-              <div className="p-6">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-16 bg-gray-200 rounded mb-4"></div>
-                ))}
-              </div>
-            </div>
-          </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Cargando CVs...</p>
         </div>
       </div>
     );
+  }
+
+  if (!user) {
+    return null; // Will redirect
   }
 
   return (
@@ -252,16 +162,14 @@ ${new Date().toLocaleString()}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                CVs
-              </h1>
-              <p className="text-gray-600 mt-2">
-                Gestiona tus CVs base y adaptados para cada postulación
+              <h1 className="text-3xl font-bold text-gray-900">Mis CVs</h1>
+              <p className="mt-2 text-gray-600">
+                Gestiona y adapta tus CVs con inteligencia artificial
               </p>
             </div>
             <button
-              onClick={handleUploadCV}
-              className="btn-primary flex items-center space-x-2"
+              onClick={() => setShowUploadModal(true)}
+              className="btn-primary flex items-center space-x-2 px-6 py-3 text-base font-medium"
             >
               <SparklesIcon className="w-5 h-5" />
               <span>Adaptar CV</span>
@@ -269,60 +177,73 @@ ${new Date().toLocaleString()}
           </div>
         </div>
 
-
-        {/* Filters and Search */}
-        <div className="bg-white rounded-lg shadow mb-6 p-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <input
-                type="text"
-                placeholder="Buscar por nombre de archivo..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="input-field"
-              />
-            </div>
-            <div className="flex items-center space-x-2">
-              <select
-                value={filter}
-                onChange={(e) => setFilter(e.target.value as 'all' | 'base' | 'adapted')}
-                className="input-field w-40"
-              >
-                <option value="all">Todos los tipos</option>
-                <option value="base">CVs Base</option>
-                <option value="adapted">CVs Adaptados</option>
-              </select>
-            </div>
+        {/* Filters */}
+        <div className="mb-6">
+          <div className="flex space-x-4">
+            <button
+              onClick={() => setFilter('all')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                filter === 'all'
+                  ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                  : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+              }`}
+            >
+              Todos ({cvs.length})
+            </button>
+            <button
+              onClick={() => setFilter('base')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                filter === 'base'
+                  ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                  : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+              }`}
+            >
+              Base ({cvs.filter(cv => cv.type === 'base').length})
+            </button>
+            <button
+              onClick={() => setFilter('adapted')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                filter === 'adapted'
+                  ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                  : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+              }`}
+            >
+              Adaptados ({cvs.filter(cv => cv.type === 'adapted').length})
+            </button>
           </div>
         </div>
 
-        {/* Table */}
+        {/* Content */}
         {filteredCVs.length === 0 ? (
           <EmptyState
-            title="Aún no has subido CVs"
-            description="Sube tu primer CV base para comenzar a crear versiones adaptadas para cada postulación."
-            actionLabel="Subir CV base"
-            onAction={handleUploadCV}
             icon={DocumentTextIcon}
+            title="No tienes CVs aún"
+            description={
+              filter === 'all' 
+                ? "Comienza subiendo tu primer CV y adaptándolo con IA para diferentes posiciones."
+                : filter === 'base'
+                ? "Sube tu CV base para comenzar a crear versiones adaptadas."
+                : "Crea tu primer CV adaptado usando nuestro generador de IA."
+            }
+            actionLabel="Adaptar CV"
+            onAction={() => setShowUploadModal(true)}
           />
         ) : (
-          <CVTable
-            cvs={filteredCVs}
-            onDelete={handleDeleteCV}
-            onExport={handleExportCV}
-            onAdapt={handleAdaptCV}
-          />
+          <div className="bg-white shadow rounded-lg">
+            <CVTable
+              cvs={filteredCVs}
+              onDelete={handleDeleteCV}
+              onExport={handleExportCV}
+            />
+          </div>
         )}
 
         {/* Upload Modal */}
-        {showUploadModal && (
-          <CVUploadModal
-            isOpen={showUploadModal}
-            onClose={() => setShowUploadModal(false)}
-            onConfirm={handleCVUploaded}
-          />
-        )}
-
+        <CVUploadModal
+          isOpen={showUploadModal}
+          onClose={() => setShowUploadModal(false)}
+          onConfirm={handleCVUploaded}
+        />
       </div>
     </div>
   );

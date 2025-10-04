@@ -29,9 +29,12 @@ export async function POST(request: NextRequest) {
     formData.append('descripcion_rol', jobDescription.trim());
     formData.append('cvName', cvName);
     formData.append('timestamp', new Date().toISOString());
+    
+    // Agregar un campo adicional para indicar que es un PDF
+    formData.append('file_type', 'pdf');
 
     // Tu webhook de n8n (producción)
-        const n8nWebhookUrl = 'https://appwebhook.gianmarcorusher.com/webhook/81822125-3328-4a19-8ea8-892ec4e6d9b7';
+    const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL || 'https://appwebhook.gianmarcorusher.com/webhook/81822125-3328-4a19-8ea8-892ec4e6d9b7';
 
     console.log('Enviando a n8n:', { 
       cvName, 
