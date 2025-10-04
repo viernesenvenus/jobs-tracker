@@ -19,16 +19,23 @@ export class JobService {
       return data.map(job => ({
         id: job.id,
         userId: job.user_id,
-        company: job.company,
-        position: job.title,
-        status: job.status || 'applied',
-        appliedDate: new Date(job.applied_at),
-        firstInterviewDate: job.first_call ? new Date(job.first_call) : null,
-        responseTime: job.response_tim || null,
-        contactPerson: job.contact_nam || null,
-        jobUrl: job.job_link || null,
-        notes: '', // We'll need to add this field to the database
-        documents: [], // We'll need to add this field to the database
+        role: job.title || '',
+        company: job.company || '',
+        position: job.title || '',
+        source: 'other' as const,
+        applicationDate: new Date(job.applied_at),
+        firstInterviewDate: job.first_call ? new Date(job.first_call) : undefined,
+        responseTime: job.response_tim || undefined,
+        contactPerson: job.contact_nam || undefined,
+        contactEmail: undefined,
+        contactPhone: undefined,
+        jobLink: job.job_link || undefined,
+        jobDescription: undefined,
+        status: (job.status || 'applied') as any,
+        nextAction: undefined,
+        notes: undefined,
+        cvId: undefined,
+        adaptedCvId: undefined,
         createdAt: new Date(job.created_at),
         updatedAt: new Date(job.created_at)
       }));
@@ -46,11 +53,11 @@ export class JobService {
           user_id: userId,
           title: jobData.position || '',
           company: jobData.company || '',
-          applied_at: jobData.appliedDate?.toISOString() || new Date().toISOString(),
+          applied_at: jobData.applicationDate?.toISOString() || new Date().toISOString(),
           first_call: jobData.firstInterviewDate?.toISOString() || null,
           response_tim: jobData.responseTime || null,
           contact_nam: jobData.contactPerson || null,
-          job_link: jobData.jobUrl || null,
+          job_link: jobData.jobLink || null,
           status: jobData.status || 'applied',
           created_at: new Date().toISOString()
         });
@@ -74,11 +81,11 @@ export class JobService {
         .update({
           title: updates.position,
           company: updates.company,
-          applied_at: updates.appliedDate?.toISOString(),
+          applied_at: updates.applicationDate?.toISOString(),
           first_call: updates.firstInterviewDate?.toISOString(),
           response_tim: updates.responseTime,
           contact_nam: updates.contactPerson,
-          job_link: updates.jobUrl,
+          job_link: updates.jobLink,
           status: updates.status
         })
         .eq('id', jobId);
