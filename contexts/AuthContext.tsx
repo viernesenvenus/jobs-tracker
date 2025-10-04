@@ -262,6 +262,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else {
           console.log('Profile created successfully');
         }
+
+        // Load user data immediately after registration
+        await loadUserData(data.user);
       }
 
       return true;
