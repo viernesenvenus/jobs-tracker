@@ -4,10 +4,11 @@
 
 Una aplicación moderna para gestionar postulaciones laborales con adaptación de CV por IA, diseñada específicamente para el mercado LATAM.
 
-![Jobs Tracker Dashboard](https://img.shields.io/badge/Status-MVP%20Ready-green)
+![Jobs Tracker Dashboard](https://img.shields.io/badge/Status-Production%20Ready-green)
 ![Next.js](https://img.shields.io/badge/Next.js-14-black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-3.0-38B2AC)
+![Deployed](https://img.shields.io/badge/Deployed-Vercel-00C7B7)
 
 ## ✨ Características Principales
 
@@ -184,6 +185,12 @@ Para probar la aplicación, usa estas credenciales:
 - **Contraseña**: `123456`
 
 ## 🚀 Despliegue
+
+### ✅ **Deploy Activo en Producción**
+
+**🌐 Aplicación en vivo:** [jobs-tracker-three.vercel.app](https://jobs-tracker-three.vercel.app)
+
+**📦 Repositorio:** [github.com/viernesenvenus/jobs-tracker](https://github.com/viernesenvenus/jobs-tracker)
 
 ### Vercel (Recomendado)
 ```bash
