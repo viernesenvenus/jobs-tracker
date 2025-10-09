@@ -31,7 +31,6 @@ export function DashboardTable({
 }: DashboardTableProps) {
   const [editingCell, setEditingCell] = useState<{ rowId: string; columnKey: string } | null>(null);
   const [editValue, setEditValue] = useState('');
-  const [hoveredRow, setHoveredRow] = useState<string | null>(null);
 
   const statusLabels: Record<ApplicationStatus, string> = {
     applied: 'Postulado',
@@ -109,6 +108,28 @@ export function DashboardTable({
   const renderCellContent = (application: JobApplication, column: TableColumn) => {
     const value = application[column.key as keyof JobApplication];
     const isEditing = editingCell?.rowId === application.id && editingCell?.columnKey === column.key;
+
+    // Render actions column with icons
+    if (column.key === 'actions') {
+      return (
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => onEdit(application.id)}
+            className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
+            title="Editar"
+          >
+            <PencilIcon className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => onDelete(application.id)}
+            className="p-1 text-gray-400 hover:text-red-600 transition-colors"
+            title="Eliminar"
+          >
+            <TrashIcon className="w-4 h-4" />
+          </button>
+        </div>
+      );
+    }
 
     if (isEditing) {
       if (column.type === 'select') {
@@ -203,8 +224,6 @@ export function DashboardTable({
               <tr
                 key={application.id}
                 className="hover:bg-gray-50 transition-colors"
-                onMouseEnter={() => setHoveredRow(application.id)}
-                onMouseLeave={() => setHoveredRow(null)}
               >
                 {columns.map((column) => (
                   <td
@@ -224,32 +243,6 @@ export function DashboardTable({
         </table>
       </div>
 
-      {/* Action buttons for hovered row */}
-      {hoveredRow && (
-        <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex space-x-2">
-          <button
-            onClick={() => onEdit(hoveredRow)}
-            className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
-            title="Editar"
-          >
-            <PencilIcon className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => onFollowUp(hoveredRow)}
-            className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
-            title="Seguimiento"
-          >
-            <EyeIcon className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => onDelete(hoveredRow)}
-            className="p-1 text-gray-400 hover:text-red-600 transition-colors"
-            title="Eliminar"
-          >
-            <TrashIcon className="w-4 h-4" />
-          </button>
-        </div>
-      )}
 
       {/* Editing controls */}
       {editingCell && (

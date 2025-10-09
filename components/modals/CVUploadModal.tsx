@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useToast } from '@/contexts/ToastContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,8 +13,7 @@ import {
   SparklesIcon,
   CheckCircleIcon,
   ArrowLeftIcon,
-  ArrowRightIcon,
-  ExclamationTriangleIcon
+  ArrowRightIcon
 } from '@heroicons/react/24/outline';
 
 interface CVUploadModalProps {
@@ -35,12 +34,22 @@ export function CVUploadModal({ isOpen, onClose, onConfirm }: CVUploadModalProps
   const [jobDescription, setJobDescription] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [keywords, setKeywords] = useState<string[]>([]);
-  const [suggestions, setSuggestions] = useState<string[]>([]);
   const [coverage, setCoverage] = useState(0);
   const [generatedCV, setGeneratedCV] = useState<Partial<CV> | null>(null);
 
-  const { register, handleSubmit, watch, reset: resetForm, formState: { errors } } = useForm<FormData>();
+  const { register, handleSubmit, watch, reset: resetForm, setValue, formState: { errors } } = useForm<FormData>();
   const watchedFile = watch('file');
+  const watchedName = watch('name');
+
+  // Efecto para generar nombre automático cuando se sube un archivo
+  useEffect(() => {
+    if (watchedFile && watchedFile[0] && !watchedName) {
+      const fileName = watchedFile[0].name;
+      const generatedName = generateCVName(fileName);
+      setValue('name', generatedName);
+      console.log('🔤 Nombre generado automáticamente:', generatedName);
+    }
+  }, [watchedFile, watchedName, setValue]);
 
   if (!isOpen) return null;
 
@@ -49,7 +58,6 @@ export function CVUploadModal({ isOpen, onClose, onConfirm }: CVUploadModalProps
     setCurrentStep('upload');
     setJobDescription('');
     setKeywords([]);
-    setSuggestions([]);
     setCoverage(0);
     setGeneratedCV(null);
   };
@@ -75,6 +83,24 @@ export function CVUploadModal({ isOpen, onClose, onConfirm }: CVUploadModalProps
     }
   };
 
+  // Función para generar nombre automático basado en el archivo
+  const generateCVName = (fileName: string): string => {
+    // Remover la extensión del archivo
+    const nameWithoutExt = fileName.replace(/\.[^/.]+$/, "");
+    
+    // Limpiar el nombre (remover guiones bajos, guiones, etc.)
+    const cleanName = nameWithoutExt
+      .replace(/[_-]/g, ' ')
+      .replace(/\b\w/g, l => l.toUpperCase()); // Capitalizar primera letra de cada palabra
+    
+    // Si el nombre es muy largo, truncarlo
+    if (cleanName.length > 30) {
+      return cleanName.substring(0, 30) + '...';
+    }
+    
+    return cleanName || 'Mi CV';
+  };
+
   const analyzeJobDescription = async () => {
     if (!jobDescription.trim()) {
       showError('Error', 'Por favor ingresa la descripción del trabajo.');
@@ -88,7 +114,6 @@ export function CVUploadModal({ isOpen, onClose, onConfirm }: CVUploadModalProps
       if (generatedCV) {
         setGeneratedCV(null);
         setKeywords([]);
-        setSuggestions([]);
         setCoverage(0);
       }
       
@@ -115,6 +140,12 @@ export function CVUploadModal({ isOpen, onClose, onConfirm }: CVUploadModalProps
         cvFile: cvFileData,
         jobDescription: jobDescription.trim()
       };
+
+      console.log('🔍 Enviando a n8n:', { 
+        cvName: cvData.cvName, 
+        hasCvFile: !!cvData.cvFile,
+        jobDescriptionLength: cvData.jobDescription.length 
+      });
 
       const response = await fetch('/api/adapt-cv', {
         method: 'POST',
@@ -172,20 +203,14 @@ export function CVUploadModal({ isOpen, onClose, onConfirm }: CVUploadModalProps
 
   // Función de fallback para simular adaptación si n8n no está disponible
   const simulateAdaptation = async () => {
+    console.log('🔄 Usando simulación - n8n no disponible');
+    
     // Simular análisis de IA
     await new Promise(resolve => setTimeout(resolve, 2000));
     
     // Extraer keywords de la descripción (simulado)
     const extractedKeywords = ['React', 'JavaScript', 'TypeScript', 'CSS', 'HTML', 'Node.js', 'Git', 'Agile'];
     setKeywords(extractedKeywords);
-    
-    // Generar sugerencias (simulado)
-    setSuggestions([
-      'Destaca tu experiencia con React y JavaScript',
-      'Menciona proyectos con TypeScript',
-      'Incluye ejemplos de trabajo en equipo',
-      'Resalta tu experiencia con metodologías ágiles'
-    ]);
     
     // Calcular cobertura (simulado)
     const coverage = Math.floor(Math.random() * 30) + 70; // 70-100%
@@ -210,22 +235,29 @@ export function CVUploadModal({ isOpen, onClose, onConfirm }: CVUploadModalProps
 
   const handleDownloadCV = () => {
     if (generatedCV) {
-      // Si n8n devolvió contenido adaptado, usarlo directamente
-      if (generatedCV.adaptedContent) {
-        // Crear y descargar archivo
-        const blob = new Blob([generatedCV.adaptedContent], { type: 'application/msword;charset=utf-8' });
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = generatedCV.fileName || 'CV_adaptado.doc';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
+      try {
+        console.log('📥 Descargando CV:', generatedCV.fileName);
         
-        showSuccess('Descarga iniciada', 'El CV adaptado se está descargando.');
-      } else {
-        showError('Error', 'No hay contenido para descargar.');
+        // Si n8n devolvió contenido adaptado, usarlo directamente
+        if (generatedCV.adaptedContent) {
+          // Crear y descargar archivo
+          const blob = new Blob([generatedCV.adaptedContent], { type: 'application/msword;charset=utf-8' });
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = generatedCV.fileName || 'CV_adaptado.doc';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+          
+          showSuccess('Descarga iniciada', 'El CV adaptado se está descargando.');
+        } else {
+          showError('Error', 'No hay contenido disponible para descargar este CV.');
+        }
+      } catch (error) {
+        console.error('Error downloading CV:', error);
+        showError('Error', 'No se pudo descargar el CV.');
       }
     }
   };
@@ -233,29 +265,25 @@ export function CVUploadModal({ isOpen, onClose, onConfirm }: CVUploadModalProps
   const handleSaveCV = async () => {
     if (generatedCV && user) {
       try {
+        console.log('💾 Preparando CV para guardar:', generatedCV);
+        
         const newCV: Partial<CV> = {
           ...generatedCV,
           userId: user.id,
           createdAt: new Date(),
           updatedAt: new Date(),
         };
-        const { data, error } = await cvService.createCV(newCV);
-        if (error) {
-          throw new Error(error.message);
-        }
-        if (data) {
-          // También llamar al callback para actualizar la UI local
-          onConfirm(data);
-          showSuccess('CV adaptado guardado', 'El CV adaptado se ha guardado exitosamente en tu lista.');
-          
-          // Reset modal
-          resetModal();
-        } else {
-          showError('Error', 'No se pudo guardar el CV en la base de datos.');
-        }
+        
+        // Solo llamar al callback, no guardar directamente
+        onConfirm(newCV);
+        
+        // Reset modal y cerrar
+        resetModal();
+        handleClose();
+        
       } catch (error) {
-        console.error('Error saving CV:', error);
-        showError('Error', `No se pudo guardar el CV: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+        console.error('Error preparing CV:', error);
+        showError('Error', `No se pudo preparar el CV: ${error instanceof Error ? error.message : 'Error desconocido'}`);
       }
     }
   };
@@ -277,7 +305,7 @@ export function CVUploadModal({ isOpen, onClose, onConfirm }: CVUploadModalProps
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-blue-100 rounded-lg">
-              <SparklesIcon className="w-6 h-6 text-blue-600" />
+              <CloudArrowUpIcon className="w-6 h-6 text-blue-600" />
             </div>
             <div>
               <h2 className="text-xl font-semibold text-gray-900">Adaptar CV con IA</h2>
@@ -340,30 +368,34 @@ export function CVUploadModal({ isOpen, onClose, onConfirm }: CVUploadModalProps
           <form onSubmit={handleSubmit(onSubmit)}>
             {/* Step 1: Upload CV */}
             {currentStep === 'upload' && (
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Nombre del CV
-              </label>
-                <input
+                  </label>
+                  <input
                     {...register('name', { required: 'El nombre es requerido' })}
                     type="text"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Ej: CV Frontend Developer"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
+                    placeholder="Se generará automáticamente al subir el archivo"
+                    readOnly
                   />
+                  <p className="mt-1 text-xs text-gray-500">
+                    El nombre se genera automáticamente basado en el archivo seleccionado
+                  </p>
                   {errors.name && (
                     <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
                   )}
-                      </div>
+                </div>
 
-                      <div>
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Archivo CV (PDF, DOC, DOCX)
                   </label>
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
                     <CloudArrowUpIcon className="mx-auto h-12 w-12 text-gray-400" />
                     <div className="mt-4">
-                      <label htmlFor="file-upload" className="cursor-pointer">
+                      <label htmlFor="file-upload" className="cursor-pointer block">
                         <span className="mt-2 block text-sm font-medium text-gray-900">
                           Arrastra tu CV aquí o haz clic para seleccionar
                         </span>
@@ -377,8 +409,16 @@ export function CVUploadModal({ isOpen, onClose, onConfirm }: CVUploadModalProps
                       </label>
                       <p className="mt-1 text-xs text-gray-500">
                         PDF, DOC, DOCX hasta 10MB
-                        </p>
-                      </div>
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => document.getElementById('file-upload')?.click()}
+                        className="mt-3 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        <CloudArrowUpIcon className="w-4 h-4 mr-2" />
+                        Seleccionar archivo
+                      </button>
+                    </div>
                   </div>
                   {watchedFile && watchedFile[0] && (
                     <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-md">
@@ -387,10 +427,10 @@ export function CVUploadModal({ isOpen, onClose, onConfirm }: CVUploadModalProps
                       </p>
                     </div>
                   )}
-              {errors.file && (
-                <p className="mt-1 text-sm text-red-600">{errors.file.message}</p>
-              )}
-            </div>
+                  {errors.file && (
+                    <p className="mt-1 text-sm text-red-600">{errors.file.message}</p>
+                  )}
+                </div>
 
                 <div className="flex justify-end">
                   <button
@@ -420,10 +460,10 @@ export function CVUploadModal({ isOpen, onClose, onConfirm }: CVUploadModalProps
                   </button>
                 </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Descripción del trabajo
-              </label>
+                  </label>
                   <textarea
                     value={jobDescription}
                     onChange={(e) => setJobDescription(e.target.value)}
@@ -431,10 +471,10 @@ export function CVUploadModal({ isOpen, onClose, onConfirm }: CVUploadModalProps
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Pega aquí la descripción completa del trabajo al que te postulas. Incluye responsabilidades, requisitos, tecnologías, etc."
                   />
-              <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm text-gray-500">
                     {jobDescription.length} caracteres
-              </p>
-            </div>
+                  </p>
+                </div>
 
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <div className="flex items-start space-x-3">
@@ -576,53 +616,28 @@ export function CVUploadModal({ isOpen, onClose, onConfirm }: CVUploadModalProps
                   </div>
                 )}
 
-                {/* Suggestions */}
-                {suggestions.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-900 mb-3">Sugerencias de mejora:</h4>
-                    <ul className="space-y-2">
-                      {suggestions.map((suggestion, index) => (
-                        <li key={index} className="flex items-start space-x-2">
-                          <ExclamationTriangleIcon className="w-4 h-4 text-yellow-500 mt-0.5" />
-                          <span className="text-sm text-gray-700">{suggestion}</span>
-                        </li>
-                      ))}
-              </ul>
-                  </div>
-                )}
-
-                {/* Preview */}
-                <div className="border border-gray-200 rounded-lg p-4">
-                  <h4 className="text-sm font-medium text-gray-900 mb-3">Vista previa del CV adaptado:</h4>
-                  <div className="bg-gray-50 rounded-lg p-4 max-h-64 overflow-y-auto">
-                    <div className="text-sm text-gray-700 whitespace-pre-wrap">
-                      {generatedCV.adaptedContent?.substring(0, 500)}...
-                    </div>
-            </div>
-          </div>
-
-          {/* Actions */}
+                {/* Actions */}
                 <div className="flex justify-end space-x-3">
-            <button
-              type="button"
+                  <button
+                    type="button"
                     onClick={handleDownloadCV}
                     className="btn-secondary flex items-center space-x-2 px-6 py-3 text-base font-medium"
-            >
+                  >
                     <CloudArrowUpIcon className="w-5 h-5" />
                     <span>Descargar CV</span>
-            </button>
-            <button
+                  </button>
+                  <button
                     type="button"
                     onClick={handleSaveCV}
                     className="btn-primary flex items-center space-x-2 px-6 py-3 text-base font-medium"
                   >
                     <CheckCircleIcon className="w-5 h-5" />
                     <span>Guardar CV</span>
-            </button>
-          </div>
+                  </button>
+                </div>
               </div>
             )}
-        </form>
+          </form>
         </div>
       </div>
     </div>

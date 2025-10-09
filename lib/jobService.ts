@@ -25,8 +25,8 @@ export class JobService {
         source: 'other' as const,
         applicationDate: new Date(job.applied_at),
         firstInterviewDate: job.first_call ? new Date(job.first_call) : undefined,
-        responseTime: job.response_tim || undefined,
-        contactPerson: job.contact_nam || undefined,
+        responseTime: job.response_time || undefined,
+        contactPerson: job.contact_name || undefined,
         contactEmail: undefined,
         contactPhone: undefined,
         jobLink: job.job_link || undefined,
@@ -47,20 +47,27 @@ export class JobService {
 
   static async saveJob(userId: string, jobData: Partial<JobApplication>): Promise<boolean> {
     try {
+      console.log('🔍 JobService.saveJob called with:', { userId, jobData });
+      
+      const insertData = {
+        id: crypto.randomUUID(),
+        user_id: userId,
+        title: jobData.position || '',
+        company: jobData.company || '',
+        applied_at: jobData.applicationDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
+        first_call: jobData.firstInterviewDate?.toISOString() || null,
+        response_time: jobData.responseTime || null,
+        contact_name: jobData.contactPerson || null,
+        job_link: jobData.jobLink || null,
+        status: jobData.status || 'applied',
+        created_at: new Date().toISOString()
+      };
+      
+      console.log('📝 Inserting data:', insertData);
+      
       const { error } = await supabase
         .from('jobs')
-        .insert({
-          user_id: userId,
-          title: jobData.position || '',
-          company: jobData.company || '',
-          applied_at: jobData.applicationDate?.toISOString() || new Date().toISOString(),
-          first_call: jobData.firstInterviewDate?.toISOString() || null,
-          response_tim: jobData.responseTime || null,
-          contact_nam: jobData.contactPerson || null,
-          job_link: jobData.jobLink || null,
-          status: jobData.status || 'applied',
-          created_at: new Date().toISOString()
-        });
+        .insert(insertData);
 
       if (error) {
         console.error('Error saving job:', error);
@@ -76,18 +83,24 @@ export class JobService {
 
   static async updateJob(jobId: string, updates: Partial<JobApplication>): Promise<boolean> {
     try {
+      console.log('🔍 JobService.updateJob called with:', { jobId, updates });
+      
+      const updateData = {
+        title: updates.position,
+        company: updates.company,
+        applied_at: updates.applicationDate?.toISOString().split('T')[0],
+        first_call: updates.firstInterviewDate?.toISOString().split('T')[0] || null,
+        response_time: updates.responseTime || null,
+        contact_name: updates.contactPerson || null,
+        job_link: updates.jobLink || null,
+        status: updates.status
+      };
+      
+      console.log('📝 Updating job with data:', updateData);
+      
       const { error } = await supabase
         .from('jobs')
-        .update({
-          title: updates.position,
-          company: updates.company,
-          applied_at: updates.applicationDate?.toISOString(),
-          first_call: updates.firstInterviewDate?.toISOString(),
-          response_tim: updates.responseTime,
-          contact_nam: updates.contactPerson,
-          job_link: updates.jobLink,
-          status: updates.status
-        })
+        .update(updateData)
         .eq('id', jobId);
 
       if (error) {

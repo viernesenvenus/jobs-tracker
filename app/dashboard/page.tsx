@@ -9,6 +9,7 @@ import { JobApplication, ApplicationStatus, TableColumn } from '@/types';
 import { DashboardTable } from '@/components/DashboardTable';
 import { DashboardStats } from '@/components/DashboardStats';
 import { EmptyState } from '@/components/EmptyState';
+import { JobService } from '@/lib/jobService';
 import { PlusIcon, FunnelIcon } from '@heroicons/react/24/outline';
 
 // Mock data for development
@@ -81,7 +82,7 @@ const tableColumns: TableColumn[] = [
     options: ['applied', 'interview', 'feedback', 'closed', 'rejected', 'offer'],
     width: '120px' 
   },
-  { key: 'actions', label: 'Seguimiento', editable: false, type: 'text', width: '100px' }
+  { key: 'actions', label: 'Acciones', editable: false, type: 'text', width: '120px' }
 ];
 
 export default function DashboardPage() {
@@ -106,50 +107,138 @@ export default function DashboardPage() {
       return;
     }
 
-    // Simulate loading
+    // Load real data from Supabase
     const loadData = async () => {
       setIsLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setApplications(mockApplications);
-      setIsLoading(false);
+      try {
+        console.log('Loading jobs for user:', user.id);
+        const jobs = await JobService.getJobs(user.id);
+        console.log('Loaded jobs:', jobs);
+        setApplications(jobs);
+      } catch (error) {
+        console.error('Error loading jobs:', error);
+        showError('Error', 'No se pudieron cargar las postulaciones.');
+        // Fallback to mock data for development
+        setApplications(mockApplications);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     loadData();
   }, [user, router]);
 
   const handleAddApplication = () => {
-    openApplicationModal();
+    openApplicationModal(undefined, handleApplicationConfirm);
   };
 
   const handleEditApplication = (applicationId: string) => {
-    openApplicationModal(applicationId);
+    const application = applications.find(app => app.id === applicationId);
+    if (application) {
+      openApplicationModal(applicationId, handleApplicationConfirm, application);
+    }
   };
 
   const handleFollowUp = (applicationId: string) => {
     openFollowUpModal(applicationId);
   };
 
-  const handleDeleteApplication = async (applicationId: string) => {
-    try {
-      setApplications(prev => prev.filter(app => app.id !== applicationId));
-      showSuccess('Postulación eliminada', 'La postulación ha sido eliminada exitosamente.');
-    } catch (error) {
-      showError('Error', 'No se pudo eliminar la postulación.');
-    }
+  const handleDeleteApplication = (applicationId: string) => {
+    const application = applications.find(app => app.id === applicationId);
+    const applicationName = application ? `${application.role} en ${application.company}` : 'esta postulación';
+    
+    openConfirmationModal(
+      'Confirmar eliminación',
+      `¿Estás seguro de que quieres eliminar ${applicationName}? Esta acción no se puede deshacer.`,
+      async () => {
+        try {
+          const success = await JobService.deleteJob(applicationId);
+          if (success) {
+            setApplications(prev => prev.filter(app => app.id !== applicationId));
+            showSuccess('Postulación eliminada', 'La postulación ha sido eliminada exitosamente.');
+          } else {
+            showError('Error', 'No se pudo eliminar la postulación.');
+          }
+        } catch (error) {
+          showError('Error', 'No se pudo eliminar la postulación.');
+        }
+      }
+    );
   };
 
   const handleUpdateApplication = async (applicationId: string, updates: Partial<JobApplication>) => {
     try {
-      setApplications(prev => 
-        prev.map(app => 
-          app.id === applicationId 
-            ? { ...app, ...updates, updatedAt: new Date() }
-            : app
-        )
-      );
-      showSuccess('Actualizado', 'Los cambios se han guardado exitosamente.');
+      const success = await JobService.updateJob(applicationId, updates);
+      if (success) {
+        setApplications(prev => 
+          prev.map(app => 
+            app.id === applicationId 
+              ? { ...app, ...updates, updatedAt: new Date() }
+              : app
+          )
+        );
+        showSuccess('Actualizado', 'Los cambios se han guardado exitosamente.');
+      } else {
+        showError('Error', 'No se pudieron guardar los cambios.');
+      }
     } catch (error) {
       showError('Error', 'No se pudieron guardar los cambios.');
+    }
+  };
+
+  const handleApplicationConfirm = async (applicationData: any) => {
+    try {
+      if (!user) {
+        showError('Error', 'Usuario no autenticado.');
+        return;
+      }
+
+      console.log('Saving application:', applicationData);
+      
+      let success = false;
+      
+      if (applicationData.isEdit && applicationData.applicationId) {
+        // Update existing application
+        success = await JobService.updateJob(applicationData.applicationId, applicationData);
+        
+        if (success) {
+          // Update the local state immediately
+          setApplications(prev => 
+            prev.map(app => 
+              app.id === applicationData.applicationId 
+                ? { 
+                    ...app, 
+                    role: applicationData.role,
+                    company: applicationData.company,
+                    applicationDate: applicationData.applicationDate,
+                    firstInterviewDate: applicationData.firstInterviewDate,
+                    responseTime: applicationData.responseTime,
+                    contactPerson: applicationData.contactPerson,
+                    jobLink: applicationData.jobLink,
+                    status: applicationData.status,
+                    updatedAt: new Date()
+                  }
+                : app
+            )
+          );
+        }
+      } else {
+        // Create new application
+        success = await JobService.saveJob(user.id, applicationData);
+        
+        if (success) {
+          // Reload the applications to show the new one
+          const jobs = await JobService.getJobs(user.id);
+          setApplications(jobs);
+        }
+      }
+      
+      if (!success) {
+        showError('Error', 'No se pudo guardar la postulación.');
+      }
+    } catch (error) {
+      console.error('Error saving application:', error);
+      showError('Error', 'No se pudo guardar la postulación.');
     }
   };
 

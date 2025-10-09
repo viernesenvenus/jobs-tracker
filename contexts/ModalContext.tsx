@@ -39,11 +39,12 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
     setModals([]);
   }, []);
 
-  const openApplicationModal = useCallback((applicationId?: string): string => {
+  const openApplicationModal = useCallback((applicationId?: string, onConfirm?: (data: any) => void, applicationData?: any): string => {
     return openModal({
       type: 'application',
-      data: { applicationId },
-      onClose: () => closeModal(applicationId || '')
+      data: { applicationId, applicationData },
+      onClose: () => closeModal(applicationId || ''),
+      onConfirm: onConfirm
     });
   }, [openModal, closeModal]);
 

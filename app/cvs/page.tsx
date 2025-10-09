@@ -59,49 +59,62 @@ export default function CVsPage() {
   };
 
   const handleCVUploaded = async (cvData: Partial<CV>) => {
-    if (!user) return;
+    if (!user) {
+      console.error('❌ No hay usuario autenticado');
+      return;
+    }
 
     try {
+      console.log('🔍 handleCVUploaded llamado con:', cvData);
+      
       // Save to Supabase
-      const { data, error } = await cvService.createCV({
+      const cvToSave = {
         ...cvData,
         userId: user.id,
         createdAt: new Date(),
         updatedAt: new Date(),
-      });
-      const success = !error;
+      };
       
-      if (success) {
-        // Update local state
-        const newCV: CV = {
-          id: Date.now().toString(),
-          userId: user.id,
-          name: cvData.name || 'Nuevo CV',
-          type: cvData.type || 'base',
-          filePath: cvData.filePath || '',
-          fileName: cvData.fileName || '',
-          fileSize: cvData.fileSize || 0,
-          keywords: cvData.keywords || [],
-          coverage: cvData.coverage || 0,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        };
-
-        setCvs(prev => [newCV, ...prev]);
-        
-        if (cvData.type === 'adapted') {
-          showSuccess('CV adaptado guardado', 'El CV adaptado se ha guardado exitosamente en tu lista.');
-        } else {
-          showSuccess('CV subido', 'El CV se ha subido exitosamente.');
-        }
-        
-        setShowUploadModal(false);
-      } else {
-        showError('Error', 'No se pudo guardar el CV.');
+      console.log('📝 Guardando CV en Supabase:', cvToSave);
+      
+      const { data, error } = await cvService.createCV(cvToSave);
+      
+      if (error) {
+        console.error('❌ Error guardando CV:', error);
+        showError('Error', `No se pudo guardar el CV: ${error.message || 'Error desconocido'}`);
+        return;
       }
+      
+      console.log('✅ CV guardado exitosamente:', data);
+      
+      // Update local state
+      const newCV: CV = {
+        id: Date.now().toString(),
+        userId: user.id,
+        name: cvData.name || 'Nuevo CV',
+        type: cvData.type || 'base',
+        filePath: cvData.filePath || '',
+        fileName: cvData.fileName || '',
+        fileSize: cvData.fileSize || 0,
+        keywords: cvData.keywords || [],
+        coverage: cvData.coverage || 0,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      setCvs(prev => [newCV, ...prev]);
+      
+      if (cvData.type === 'adapted') {
+        showSuccess('CV adaptado guardado', 'El CV adaptado se ha guardado exitosamente en tu lista.');
+      } else {
+        showSuccess('CV subido', 'El CV se ha subido exitosamente.');
+      }
+      
+      setShowUploadModal(false);
+      
     } catch (error) {
-      console.error('Error saving CV:', error);
-      showError('Error', 'Error al guardar el CV.');
+      console.error('❌ Error en handleCVUploaded:', error);
+      showError('Error', `Error al guardar el CV: ${error instanceof Error ? error.message : 'Error desconocido'}`);
     }
   };
 
