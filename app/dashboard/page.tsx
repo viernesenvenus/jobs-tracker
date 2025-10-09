@@ -91,21 +91,39 @@ export default function DashboardPage() {
   const [filter, setFilter] = useState<ApplicationStatus | 'all'>('all');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const { user } = useAuth();
+  const { user, isLoading: isAuthLoading } = useAuth();
   const { openApplicationModal, openFollowUpModal, openConfirmationModal } = useModal();
   const { showSuccess, showError } = useToast();
   const router = useRouter();
 
   useEffect(() => {
+    console.log('📊 Dashboard - useEffect triggered:', { 
+      hasUser: !!user, 
+      userEmail: user?.email, 
+      onboardingCompleted: user?.onboardingCompleted,
+      isAuthLoading 
+    });
+    
+    // Wait for auth to finish loading before checking user
+    if (isAuthLoading) {
+      console.log('⏳ Dashboard - Auth still loading, waiting...');
+      return;
+    }
+    
+    // If auth finished loading and there's no user, redirect to login
     if (!user) {
-      router.push('/');
+      console.log('❌ Dashboard - No user after auth loaded, redirecting to login...');
+      router.push('/login');
       return;
     }
 
     if (!user.onboardingCompleted) {
+      console.log('🔄 Dashboard - User needs onboarding, redirecting...');
       router.push('/onboarding');
       return;
     }
+    
+    console.log('✅ Dashboard - User verified, loading applications...');
 
     // Load real data from Supabase
     const loadData = async () => {
@@ -126,7 +144,7 @@ export default function DashboardPage() {
     };
 
     loadData();
-  }, [user, router]);
+  }, [user, isAuthLoading, router]);
 
   const handleAddApplication = () => {
     openApplicationModal(undefined, handleApplicationConfirm);

@@ -25,14 +25,19 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
 
   const onSubmit = async (data: FormData) => {
     try {
+      console.log('📧 LoginForm - Attempting login for:', data.email);
       const success = await login(data.email, data.password);
+      console.log('📊 LoginForm - Login result:', success);
+      
       if (success) {
         showSuccess('¡Bienvenido!', 'Has iniciado sesión correctamente.');
+        console.log('✅ LoginForm - Calling onSuccess callback');
         onSuccess?.();
       } else {
         showError('Error', 'Credenciales incorrectas. Intenta nuevamente.');
       }
     } catch (error) {
+      console.error('❌ LoginForm - Error:', error);
       showError('Error', 'Ocurrió un error al iniciar sesión.');
     }
   };

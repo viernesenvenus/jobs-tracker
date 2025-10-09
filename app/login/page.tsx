@@ -14,7 +14,9 @@ export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
 
   useEffect(() => {
+    console.log('🔍 Login page - useEffect triggered:', { isLoading, hasUser: !!user, userEmail: user?.email });
     if (!isLoading && user) {
+      console.log('✅ User authenticated, redirecting to dashboard...');
       router.push('/dashboard');
     }
   }, [user, isLoading, router]);
