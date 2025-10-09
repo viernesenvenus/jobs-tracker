@@ -56,9 +56,9 @@ export function ApplicationModal({ isOpen, onClose, onConfirm, data }: Applicati
 
   // Load existing data when editing
   useEffect(() => {
-    if (isOpen && data?.applicationId && data?.applicationData) {
+    if (isOpen && data?.applicationId && (data as any)?.applicationData) {
       // Load existing application data
-      const app = data.applicationData;
+      const app = (data as any).applicationData;
       setValue('role', app.role || '');
       setValue('company', app.company || '');
       setValue('applicationDate', app.applicationDate ? new Date(app.applicationDate).toISOString().split('T')[0] : '');
@@ -73,7 +73,7 @@ export function ApplicationModal({ isOpen, onClose, onConfirm, data }: Applicati
       setValue('applicationDate', new Date().toISOString().split('T')[0]);
       setValue('status', 'applied');
     }
-  }, [isOpen, data?.applicationId, data?.applicationData, reset, setValue]);
+  }, [isOpen, data?.applicationId, (data as any)?.applicationData, reset, setValue]);
 
   const onSubmit = async (formData: FormData) => {
     try {

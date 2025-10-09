@@ -92,7 +92,7 @@ export default function DashboardPage() {
   const [searchTerm, setSearchTerm] = useState('');
 
   const { user } = useAuth();
-  const { openApplicationModal, openFollowUpModal } = useModal();
+  const { openApplicationModal, openFollowUpModal, openConfirmationModal } = useModal();
   const { showSuccess, showError } = useToast();
   const router = useRouter();
 

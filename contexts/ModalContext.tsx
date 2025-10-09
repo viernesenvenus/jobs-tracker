@@ -9,7 +9,7 @@ interface ModalContextType {
   openModal: (modal: Omit<Modal, 'id'>) => string;
   closeModal: (id: string) => void;
   closeAllModals: () => void;
-  openApplicationModal: (applicationId?: string) => string;
+  openApplicationModal: (applicationId?: string, onConfirm?: (data: any) => void, applicationData?: any) => string;
   openCVAdaptationModal: (cvId: string, jobApplicationId: string) => string;
   openFollowUpModal: (applicationId: string) => string;
   openConfirmationModal: (title: string, message: string, onConfirm: () => void) => string;
