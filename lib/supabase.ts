@@ -36,38 +36,41 @@ export interface Database {
         Row: {
           id: string
           user_id: string
-          file_name: string
-          file_url: string
-          file_type: string
-          coverage: number
-          file_size: string
-          status: string
+          file_name: string | null
+          file_url: string | null
+          file_type: string | null
+          coverage: number | null
+          file_size: string | null
+          status: string | null
           created_at: string
           updated_at: string
+          adapted_content: string | null
         }
         Insert: {
           id?: string
           user_id: string
-          file_name: string
-          file_url: string
-          file_type: string
-          coverage?: number
-          file_size: string
-          status?: string
+          file_name?: string | null
+          file_url?: string | null
+          file_type?: string | null
+          coverage?: number | null
+          file_size?: string | null
+          status?: string | null
           created_at?: string
           updated_at?: string
+          adapted_content?: string | null
         }
         Update: {
           id?: string
           user_id?: string
-          file_name?: string
-          file_url?: string
-          file_type?: string
-          coverage?: number
-          file_size?: string
-          status?: string
+          file_name?: string | null
+          file_url?: string | null
+          file_type?: string | null
+          coverage?: number | null
+          file_size?: string | null
+          status?: string | null
           created_at?: string
           updated_at?: string
+          adapted_content?: string | null
         }
       }
       jobs: {
@@ -78,8 +81,8 @@ export interface Database {
           company: string
           applied_at: string
           first_call: string | null
-          response_tim: string | null
-          contact_nam: string | null
+          response_time: string | null
+          contact_name: string | null
           job_link: string | null
           status: string | null
           created_at: string
@@ -91,8 +94,8 @@ export interface Database {
           company: string
           applied_at: string
           first_call?: string | null
-          response_tim?: string | null
-          contact_nam?: string | null
+          response_time?: string | null
+          contact_name?: string | null
           job_link?: string | null
           status?: string | null
           created_at?: string
@@ -104,8 +107,8 @@ export interface Database {
           company?: string
           applied_at?: string
           first_call?: string | null
-          response_tim?: string | null
-          contact_nam?: string | null
+          response_time?: string | null
+          contact_name?: string | null
           job_link?: string | null
           status?: string | null
           created_at?: string

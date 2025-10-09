@@ -23,12 +23,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Fallback timeout to ensure loading never gets stuck
   useEffect(() => {
-    // Get initial session
+    const fallbackTimeout = setTimeout(() => {
+      console.log('⚠️ Fallback timeout: Forcing loading to false');
+      setIsLoading(false);
+    }, 15000); // 15 seconds max
+
+    return () => clearTimeout(fallbackTimeout);
+  }, []);
+
+  useEffect(() => {
+    // Get initial session with timeout
     const getInitialSession = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        console.log('🔍 Getting initial session...');
+        
+        // Add timeout to prevent infinite loading
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Session timeout')), 10000)
+        );
+        
+        const sessionPromise = supabase.auth.getSession();
+        
+        const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]) as any;
+        
+        console.log('📊 Session result:', session ? 'Found' : 'Not found');
+        
         if (session?.user) {
+          console.log('👤 User found, loading data...');
           await loadUserData(session.user);
           
           // Check if user is on home page and needs redirection
@@ -45,10 +68,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               window.location.href = '/onboarding';
             }
           }
+        } else {
+          console.log('👤 No user session found');
         }
       } catch (error) {
-        console.error('Error getting initial session:', error);
+        console.error('❌ Error getting initial session:', error);
+        // Don't let errors prevent the app from loading
       } finally {
+        console.log('✅ Setting loading to false');
         setIsLoading(false);
       }
     };
@@ -138,8 +165,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('🔍 Loading user data for:', supabaseUser.email);
       console.log('User ID:', supabaseUser.id);
       
-      // Buscar el perfil en la tabla profiles
-      const { data: profile, error: profileError } = await profileService.getProfileByUserId(supabaseUser.id);
+      // Add timeout for profile loading
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Profile loading timeout')), 8000)
+      );
+      
+      const profilePromise = profileService.getProfileByUserId(supabaseUser.id);
+      
+      const { data: profile, error: profileError } = await Promise.race([profilePromise, timeoutPromise]) as any;
       
       console.log('Profile search result:', { profile, profileError });
       
