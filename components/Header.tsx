@@ -3,9 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
-import { useModal } from '@/contexts/ModalContext';
 import { 
-  PlusIcon, 
   UserIcon, 
   Cog6ToothIcon, 
   ArrowRightOnRectangleIcon,
@@ -15,13 +13,8 @@ import {
 
 export function Header() {
   const { user, logout } = useAuth();
-  const { openApplicationModal } = useModal();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-
-  const handleAddApplication = () => {
-    openApplicationModal();
-  };
 
   const handleLogout = async () => {
     await logout();
@@ -34,25 +27,33 @@ export function Header() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">J</span>
+            {user ? (
+              // Si el usuario está autenticado, el logo no es un enlace
+              <div className="flex items-center space-x-3 cursor-default">
+                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">J</span>
+                </div>
+                <div>
+                  <span className="text-xl font-bold text-gray-900">Jobs Tracker</span>
+                  <p className="text-xs text-gray-500">Tu buscador laboral organizado</p>
+                </div>
               </div>
-              <div>
-                <span className="text-xl font-bold text-gray-900">Jobs Tracker</span>
-                <p className="text-xs text-gray-500">Tu buscador laboral organizado</p>
-              </div>
-            </Link>
+            ) : (
+              // Si el usuario NO está autenticado, el logo redirige a la página de inicio
+              <Link href="/" className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">J</span>
+                </div>
+                <div>
+                  <span className="text-xl font-bold text-gray-900">Jobs Tracker</span>
+                  <p className="text-xs text-gray-500">Tu buscador laboral organizado</p>
+                </div>
+              </Link>
+            )}
           </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link
-              href="/"
-              className="text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              Inicio
-            </Link>
             {user && (
               <>
                 <Link
@@ -81,14 +82,6 @@ export function Header() {
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <>
-                <button
-                  onClick={handleAddApplication}
-                  className="btn-primary flex items-center space-x-2 px-4 py-2 text-sm font-medium"
-                >
-                  <PlusIcon className="w-4 h-4" />
-                  <span>Nueva Postulación</span>
-                </button>
-
                 {/* User Menu */}
                 <div className="relative">
                   <button
@@ -159,13 +152,6 @@ export function Header() {
         {isMenuOpen && (
           <div className="md:hidden border-t border-gray-200 py-4">
             <nav className="flex flex-col space-y-4">
-              <Link
-                href="/"
-                className="text-gray-600 hover:text-gray-900 transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Inicio
-              </Link>
               {user && (
                 <>
                   <Link
@@ -189,16 +175,6 @@ export function Header() {
                   >
                     Perfil
                   </Link>
-                  <button
-                    onClick={() => {
-                      handleAddApplication();
-                      setIsMenuOpen(false);
-                    }}
-                    className="btn-primary flex items-center space-x-2 px-4 py-2 text-sm font-medium w-full justify-center"
-                  >
-                    <PlusIcon className="w-4 h-4" />
-                    <span>Nueva Postulación</span>
-                  </button>
                 </>
               )}
             </nav>

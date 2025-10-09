@@ -30,6 +30,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
           await loadUserData(session.user);
+          
+          // Check if user is on home page and needs redirection
+          const currentPath = window.location.pathname;
+          if (currentPath === '/' || currentPath === '/login' || currentPath === '/register') {
+            const onboardingCompleted = session.user.user_metadata?.onboarding_completed;
+            console.log('Initial session - Onboarding completed:', onboardingCompleted);
+            
+            if (onboardingCompleted) {
+              console.log('Initial session - User has completed onboarding, redirecting to dashboard');
+              window.location.href = '/dashboard';
+            } else {
+              console.log('Initial session - User needs onboarding, redirecting to onboarding page');
+              window.location.href = '/onboarding';
+            }
+          }
         }
       } catch (error) {
         console.error('Error getting initial session:', error);
@@ -47,13 +62,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (session?.user) {
           await loadUserData(session.user);
           
-          // Redirect to dashboard if user just signed in
-          if (event === 'SIGNED_IN') {
-            // Only redirect if not already on dashboard or cvs pages
+          // Redirect based on onboarding status if user just signed in
+          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+            // Only redirect if not already on dashboard, cvs, or onboarding pages
             const currentPath = window.location.pathname;
             if (currentPath === '/' || currentPath === '/login' || currentPath === '/register') {
-              console.log('Redirecting to dashboard after sign in');
-              window.location.href = '/dashboard';
+              // Check if user has completed onboarding
+              const onboardingCompleted = session.user.user_metadata?.onboarding_completed;
+              console.log('Auth event:', event, 'Onboarding completed:', onboardingCompleted);
+              
+              if (onboardingCompleted) {
+                console.log('User has completed onboarding, redirecting to dashboard');
+                window.location.href = '/dashboard';
+              } else {
+                console.log('User needs onboarding, redirecting to onboarding page');
+                window.location.href = '/onboarding';
+              }
             }
           }
         } else {
@@ -83,8 +107,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             console.log('OAuth redirect successful, loading user data...');
             await loadUserData(data.session.user);
             
-            // Redirect to dashboard after successful login
-            window.location.href = '/dashboard';
+            // Redirect based on onboarding status after successful OAuth login
+            const onboardingCompleted = data.session.user.user_metadata?.onboarding_completed;
+            console.log('OAuth redirect - Onboarding completed:', onboardingCompleted);
+            
+            if (onboardingCompleted) {
+              console.log('OAuth user has completed onboarding, redirecting to dashboard');
+              window.location.href = '/dashboard';
+            } else {
+              console.log('OAuth user needs onboarding, redirecting to onboarding page');
+              window.location.href = '/onboarding';
+            }
           }
         } catch (error) {
           console.error('Error handling OAuth redirect:', error);
@@ -217,7 +250,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`
+          redirectTo: `${window.location.origin}/onboarding`
         }
       });
 
@@ -317,11 +350,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       if (!user) return false;
       
-      console.log('Completing onboarding for user:', user.id);
-      console.log('Onboarding data:', data);
+      console.log('🚀 Completing onboarding for user:', user.id);
+      console.log('📝 Onboarding data:', data);
       
       // Intentar actualizar el usuario en Supabase Auth
-      const { error } = await supabase.auth.updateUser({
+      const { data: updatedUser, error } = await supabase.auth.updateUser({
         data: {
           onboarding_completed: true,
           desired_role: data.desiredRole,
@@ -331,37 +364,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) {
-        console.error('Onboarding completion error:', error.message);
+        console.error('❌ Onboarding completion error:', error.message);
         console.error('Full error:', error);
-        
-        // SOLUCIÓN TEMPORAL: Si falla la actualización, marcamos como completado localmente
-        console.log('Using temporary solution: marking onboarding as completed locally');
-        
-        // Actualizar el estado local del usuario
-        setUser(prevUser => {
-          if (!prevUser) return null;
-          return {
-            ...prevUser,
-            onboardingCompleted: true,
-            preferences: {
-              ...prevUser.preferences,
-              priorityFeatures: data.priorityFeatures,
-              activeProcesses: data.activeProcesses === 'none' ? 0 : data.activeProcesses === '1-2' ? 1 : 3
-            }
-          };
-        });
-        
-        return true; // Retornar true para permitir continuar
+        return false; // Retornar false si hay error
       }
 
-      console.log('Onboarding completed successfully');
-      return true;
-    } catch (error) {
-      console.error('Onboarding completion failed:', error);
+      console.log('✅ Onboarding completed successfully in Supabase');
+      console.log('✅ Updated user metadata:', updatedUser?.user?.user_metadata);
       
-      // SOLUCIÓN TEMPORAL: En caso de error, marcar como completado localmente
-      console.log('Using temporary solution due to error: marking onboarding as completed locally');
-      
+      // Actualizar el estado local del usuario con los datos confirmados de Supabase
       setUser(prevUser => {
         if (!prevUser) return null;
         return {
@@ -375,7 +386,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         };
       });
       
-      return true; // Retornar true para permitir continuar
+      return true;
+    } catch (error) {
+      console.error('❌ Onboarding completion failed:', error);
+      return false; // Retornar false si hay excepción
     }
   };
 

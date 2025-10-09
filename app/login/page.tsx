@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { LoginForm } from '@/components/LoginForm';
 import { RegisterForm } from '@/components/RegisterForm';
@@ -10,6 +10,7 @@ import Link from 'next/link';
 export default function LoginPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isLogin, setIsLogin] = useState(true);
 
   useEffect(() => {
@@ -17,6 +18,14 @@ export default function LoginPage() {
       router.push('/dashboard');
     }
   }, [user, isLoading, router]);
+
+  useEffect(() => {
+    // Check if mode=register is in the URL
+    const mode = searchParams.get('mode');
+    if (mode === 'register') {
+      setIsLogin(false);
+    }
+  }, [searchParams]);
 
   const handleSuccess = () => {
     router.push('/dashboard');

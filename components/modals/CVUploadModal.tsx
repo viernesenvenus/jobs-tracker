@@ -161,11 +161,17 @@ export function CVUploadModal({ isOpen, onClose, onConfirm }: CVUploadModalProps
       }
 
       const result = await response.json();
+      console.log('🔍 Respuesta completa de la API:', result);
       
       if (result.success) {
         const adaptedDocument = result.adaptedDocument;
         const extractedKeywords = result.keywords || [];
         const coverage = result.coverage || 0;
+        
+        console.log('📄 adaptedDocument disponible:', !!adaptedDocument);
+        console.log('📄 Tamaño del adaptedDocument:', adaptedDocument?.length || 0);
+        console.log('🔑 Keywords:', extractedKeywords);
+        console.log('📊 Coverage:', coverage);
         
         setKeywords(extractedKeywords);
         setCoverage(coverage);
@@ -266,18 +272,45 @@ export function CVUploadModal({ isOpen, onClose, onConfirm }: CVUploadModalProps
     if (generatedCV && user) {
       try {
         console.log('💾 Preparando CV para guardar:', generatedCV);
+        console.log('📄 Contenido adaptado disponible:', !!generatedCV.adaptedContent);
+        console.log('📄 Tamaño del contenido:', generatedCV.adaptedContent?.length || 0);
+        
+        // Convertir el contenido HTML a una cadena segura para JSON
+        const adaptedContent = generatedCV.adaptedContent || '';
+        console.log('📄 Contenido original:', adaptedContent.substring(0, 100) + '...');
+        
+        // Crear un Blob con el contenido
+        const blob = new Blob([adaptedContent], { type: 'application/msword;charset=utf-8' });
+        const blobUrl = URL.createObjectURL(blob);
         
         const newCV: Partial<CV> = {
           ...generatedCV,
           userId: user.id,
           createdAt: new Date(),
           updatedAt: new Date(),
+          // Guardar el contenido adaptado como texto
+          adaptedContent: adaptedContent,
+          // Guardar el archivo como un Blob URL
+          filePath: blobUrl,
+          // Asegurar que el nombre del archivo sea correcto
+          fileName: `${watch('name')}_Adaptado_${new Date().toISOString().split('T')[0]}.doc`,
+          // Asegurar que el tipo sea 'adapted'
+          type: 'adapted',
+          // Agregar el tamaño del archivo
+          fileSize: blob.size
         };
         
-        // Solo llamar al callback, no guardar directamente
-        onConfirm(newCV);
+        console.log('📝 CV final para guardar:', newCV);
         
-        // Reset modal y cerrar
+        // Llamar al callback y esperar a que se complete
+        console.log('🔄 Llamando a onConfirm con:', newCV);
+        
+        // Ejecutar onConfirm y esperar
+        await onConfirm(newCV);
+        
+        console.log('✅ onConfirm completado, cerrando modal');
+        
+        // Reset modal y cerrar después de guardar
         resetModal();
         handleClose();
         
@@ -616,6 +649,25 @@ export function CVUploadModal({ isOpen, onClose, onConfirm }: CVUploadModalProps
                   </div>
                 )}
 
+                {/* Resumen detallado de lo que se va a guardar en Supabase */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h4 className="font-medium text-blue-900 mb-3">📊 Datos que se guardarán en Supabase:</h4>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p><strong>👤 User ID:</strong> {user?.id || 'No disponible'}</p>
+                      <p><strong>📁 Nombre del archivo:</strong> {generatedCV?.fileName || `${watch('name')}_Adaptado_${new Date().toISOString().split('T')[0]}.doc`}</p>
+                      <p><strong>📂 Ruta del archivo:</strong> {generatedCV?.filePath || `/cvs/${watch('name')}_Adaptado.doc`}</p>
+                      <p><strong>🏷️ Tipo:</strong> {generatedCV?.type || 'adapted'}</p>
+                    </div>
+                    <div>
+                      <p><strong>📏 Tamaño:</strong> {generatedCV?.fileSize || '0'} bytes</p>
+                      <p><strong>📊 Cobertura:</strong> {coverage}%</p>
+                      <p><strong>🔑 Keywords:</strong> {keywords.length} encontradas</p>
+                      <p><strong>📄 Contenido:</strong> {generatedCV?.adaptedContent?.length || 0} caracteres</p>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Actions */}
                 <div className="flex justify-end space-x-3">
                   <button
@@ -632,7 +684,7 @@ export function CVUploadModal({ isOpen, onClose, onConfirm }: CVUploadModalProps
                     className="btn-primary flex items-center space-x-2 px-6 py-3 text-base font-medium"
                   >
                     <CheckCircleIcon className="w-5 h-5" />
-                    <span>Guardar CV</span>
+                    <span>💾 Guardar en Supabase</span>
                   </button>
                 </div>
               </div>

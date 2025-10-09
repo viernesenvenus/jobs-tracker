@@ -1,100 +1,42 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/contexts/ToastContext';
-import { EyeIcon, EyeSlashIcon, SparklesIcon, CheckCircleIcon, StarIcon } from '@heroicons/react/24/outline';
+import { SparklesIcon, StarIcon } from '@heroicons/react/24/outline';
 
 export default function HomePage() {
-  const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [showAuthModal, setShowAuthModal] = useState(false);
-
-  const { user, login, register } = useAuth();
-  const { showError, showSuccess } = useToast();
+  const { user, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
+    // Don't redirect if still loading or if we're processing OAuth
+    if (isLoading) return;
+    
+    // Check if we're in the middle of OAuth redirect (hash contains access_token)
+    if (typeof window !== 'undefined' && window.location.hash.includes('access_token')) {
+      console.log('OAuth redirect detected, waiting for AuthContext to handle it');
+      return;
+    }
+    
+    // Only redirect if we have a fully loaded user
     if (user) {
+      console.log('HomePage: User detected, redirecting based on onboarding status');
       if (user.onboardingCompleted) {
         router.push('/dashboard');
       } else {
         router.push('/onboarding');
       }
     }
-  }, [user, router]);
+  }, [user, isLoading, router]);
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!email) {
-      newErrors.email = 'El email es requerido';
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'El email no es válido';
-    }
-
-    if (!password) {
-      newErrors.password = 'La contraseña es requerida';
-    } else if (password.length < 6) {
-      newErrors.password = 'La contraseña debe tener al menos 6 caracteres';
-    }
-
-    if (!isLogin && !name) {
-      newErrors.name = 'El nombre es requerido';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) return;
-
-    setIsLoading(true);
-    setErrors({});
-
-    try {
-      let success = false;
-      
-      if (isLogin) {
-        success = await login(email, password);
-      } else {
-        success = await register(email, password, name);
-      }
-
-      if (success) {
-        showSuccess(
-          isLogin ? '¡Bienvenida de vuelta!' : '¡Cuenta creada exitosamente!',
-          isLogin 
-            ? 'Redirigiendo a tu dashboard...' 
-            : 'Completa el onboarding para comenzar.'
-        );
-      } else {
-        showError(
-          'Error de autenticación',
-          isLogin 
-            ? 'Verifica tus credenciales e intenta nuevamente.'
-            : 'No se pudo crear la cuenta. Intenta nuevamente.'
-        );
-      }
-    } catch (error) {
-      showError('Error inesperado', 'Algo salió mal. Intenta nuevamente.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleAuthClick = (action: 'login' | 'register') => {
-    setIsLogin(action === 'login');
-    setShowAuthModal(true);
+    if (action === 'login') {
+      router.push('/login');
+    } else {
+      router.push('/login?mode=register');
+    }
   };
 
   return (
@@ -275,138 +217,6 @@ export default function HomePage() {
         </div>
       </footer>
 
-      {/* Auth Modal */}
-      {showAuthModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <div>
-                <h2 className="text-2xl font-semibold text-gray-900">
-                  {isLogin ? 'Iniciar sesión' : 'Crear cuenta'}
-                </h2>
-                <p className="text-gray-600 text-sm">
-                  {isLogin 
-                    ? 'Accede a tu espacio de organización profesional'
-                    : 'Comienza a centralizar tus oportunidades laborales'
-                  }
-                </p>
-              </div>
-              <button
-                onClick={() => setShowAuthModal(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            {/* Modal Content */}
-            <form onSubmit={handleSubmit} className="p-6 space-y-6">
-              {!isLogin && (
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                    Nombre completo
-                  </label>
-                  <input
-                    id="name"
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className={`input-field ${errors.name ? 'error' : ''}`}
-                    placeholder="Tu nombre completo"
-                  />
-                  {errors.name && (
-                    <p className="mt-1 text-sm text-red-600">{errors.name}</p>
-                  )}
-                </div>
-              )}
-
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  Email
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className={`input-field ${errors.email ? 'error' : ''}`}
-                  placeholder="tu@email.com"
-                />
-                {errors.email && (
-                  <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-                )}
-              </div>
-
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                  Contraseña
-                </label>
-                <div className="relative">
-                  <input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className={`input-field pr-10 ${errors.password ? 'error' : ''}`}
-                    placeholder="Mínimo 6 caracteres"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
-                  >
-                    {showPassword ? (
-                      <EyeSlashIcon className="w-5 h-5" />
-                    ) : (
-                      <EyeIcon className="w-5 h-5" />
-                    )}
-                  </button>
-                </div>
-                {errors.password && (
-                  <p className="mt-1 text-sm text-red-600">{errors.password}</p>
-                )}
-              </div>
-
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-              >
-                {isLoading ? (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <span>{isLogin ? 'Ingresar' : 'Crear cuenta'}</span>
-                )}
-              </button>
-            </form>
-
-            <div className="px-6 pb-6">
-              <div className="text-center">
-                <button
-                  onClick={() => setIsLogin(!isLogin)}
-                  className="text-primary-600 hover:text-primary-500 font-medium transition-colors text-sm"
-                >
-                  {isLogin 
-                    ? '¿No tienes cuenta? Regístrate gratis'
-                    : '¿Ya tienes cuenta? Inicia sesión'
-                  }
-                </button>
-              </div>
-
-              {isLogin && (
-                <div className="text-center mt-4">
-                  <button className="text-gray-600 hover:text-gray-500 font-medium transition-colors text-sm">
-                    ¿Olvidaste tu contraseña?
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

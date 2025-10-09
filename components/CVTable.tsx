@@ -5,7 +5,6 @@ import { CV } from '@/types';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { 
-  EyeIcon, 
   TrashIcon, 
   ArrowDownTrayIcon,
   SparklesIcon,
@@ -127,39 +126,31 @@ export function CVTable({ cvs, onDelete, onExport, onAdapt }: CVTableProps) {
                 </td>
 
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => {/* View CV */}}
-                      className="text-gray-400 hover:text-gray-600 transition-colors"
-                      title="Ver"
-                    >
-                      <EyeIcon className="w-4 h-4" />
-                    </button>
-                    
+                  <div className="flex items-center space-x-3">
                     <button
                       onClick={() => onExport(cv.id)}
-                      className="text-gray-400 hover:text-gray-600 transition-colors"
-                      title="Exportar"
+                      className="text-gray-400 hover:text-blue-600 transition-colors p-1 rounded-md hover:bg-blue-50"
+                      title="Descargar CV"
                     >
-                      <ArrowDownTrayIcon className="w-4 h-4" />
+                      <ArrowDownTrayIcon className="w-5 h-5" />
                     </button>
                     
                     {cv.type === 'base' && (
                       <button
                         onClick={() => onAdapt(cv.id)}
-                        className="text-gray-400 hover:text-purple-600 transition-colors"
-                        title="Adaptar"
+                        className="text-gray-400 hover:text-purple-600 transition-colors p-1 rounded-md hover:bg-purple-50"
+                        title="Adaptar CV"
                       >
-                        <SparklesIcon className="w-4 h-4" />
+                        <SparklesIcon className="w-5 h-5" />
                       </button>
                     )}
                     
                     <button
                       onClick={() => onDelete(cv.id)}
-                      className="text-gray-400 hover:text-red-600 transition-colors"
-                      title="Eliminar"
+                      className="text-gray-400 hover:text-red-600 transition-colors p-1 rounded-md hover:bg-red-50"
+                      title="Eliminar CV"
                     >
-                      <TrashIcon className="w-4 h-4" />
+                      <TrashIcon className="w-5 h-5" />
                     </button>
                   </div>
                 </td>

@@ -59,6 +59,7 @@ export type ApplicationStatus =
 export interface CV {
   id: string;
   userId: string;
+  userEmail?: string; // Agregar el email del usuario
   name: string;
   type: 'base' | 'adapted';
   originalCvId?: string;
