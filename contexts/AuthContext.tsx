@@ -53,21 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (session?.user) {
           console.log('👤 User found, loading data...');
           await loadUserData(session.user);
-          
-          // Check if user is on home page and needs redirection
-          const currentPath = window.location.pathname;
-          if (currentPath === '/' || currentPath === '/login' || currentPath === '/register') {
-            const onboardingCompleted = session.user.user_metadata?.onboarding_completed;
-            console.log('Initial session - Onboarding completed:', onboardingCompleted);
-            
-            if (onboardingCompleted) {
-              console.log('Initial session - User has completed onboarding, redirecting to dashboard');
-              window.location.href = '/dashboard';
-            } else {
-              console.log('Initial session - User needs onboarding, redirecting to onboarding page');
-              window.location.href = '/onboarding';
-            }
-          }
+          console.log('✅ User data loaded, not redirecting from initial session');
         } else {
           console.log('👤 No user session found');
         }
@@ -85,28 +71,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state change:', event, session?.user?.email);
+        console.log('🔄 Auth state change:', event, session?.user?.email);
         if (session?.user) {
           await loadUserData(session.user);
-          
-          // Redirect based on onboarding status if user just signed in
-          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-            // Only redirect if not already on dashboard, cvs, or onboarding pages
-            const currentPath = window.location.pathname;
-            if (currentPath === '/' || currentPath === '/login' || currentPath === '/register') {
-              // Check if user has completed onboarding
-              const onboardingCompleted = session.user.user_metadata?.onboarding_completed;
-              console.log('Auth event:', event, 'Onboarding completed:', onboardingCompleted);
-              
-              if (onboardingCompleted) {
-                console.log('User has completed onboarding, redirecting to dashboard');
-                window.location.href = '/dashboard';
-              } else {
-                console.log('User needs onboarding, redirecting to onboarding page');
-                window.location.href = '/onboarding';
-              }
-            }
-          }
+          console.log('✅ User data loaded from auth state change');
         } else {
           setUser(null);
         }
@@ -258,19 +226,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       setIsLoading(true);
-      const { error } = await supabase.auth.signInWithPassword({
+      console.log('🔐 Attempting login for:', email);
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
 
       if (error) {
-        console.error('Login error:', error.message);
+        console.error('❌ Login error:', error.message);
         return false;
+      }
+
+      if (data.user) {
+        console.log('✅ Login successful, loading user data...');
+        await loadUserData(data.user);
+        console.log('✅ User data loaded successfully');
       }
 
       return true;
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error('❌ Login failed:', error);
       return false;
     } finally {
       setIsLoading(false);
