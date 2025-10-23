@@ -12,13 +12,26 @@ import {
 } from '@heroicons/react/24/outline';
 
 export function Header() {
-  const { user, logout } = useAuth();
+  const { user, logout, isLoading } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
-    await logout();
-    setIsUserMenuOpen(false);
+    if (isLoggingOut) return; // Prevent multiple clicks
+    
+    try {
+      setIsLoggingOut(true);
+      console.log('🚪 Header: Starting logout...');
+      await logout();
+      setIsUserMenuOpen(false);
+      setIsMenuOpen(false);
+      console.log('✅ Header: Logout completed');
+    } catch (error) {
+      console.error('❌ Header: Logout error:', error);
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   return (
@@ -188,14 +201,20 @@ export function Header() {
                   <span className="text-sm font-medium text-gray-900">{user.name}</span>
                 </div>
                 <button
-                  onClick={() => {
-                    handleLogout();
-                    setIsMenuOpen(false);
-                  }}
-                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
+                  onClick={handleLogout}
+                  disabled={isLoggingOut || isLoading}
+                  className={`flex items-center w-full px-4 py-2 text-sm rounded-md transition-colors ${
+                    isLoggingOut || isLoading
+                      ? 'text-gray-400 cursor-not-allowed bg-gray-50'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
                 >
-                  <ArrowRightOnRectangleIcon className="w-4 h-4 mr-3" />
-                  Cerrar Sesión
+                  {isLoggingOut ? (
+                    <div className="w-4 h-4 mr-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <ArrowRightOnRectangleIcon className="w-4 h-4 mr-3" />
+                  )}
+                  {isLoggingOut ? 'Cerrando sesión...' : 'Cerrar Sesión'}
                 </button>
               </div>
             ) : (

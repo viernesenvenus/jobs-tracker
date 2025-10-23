@@ -349,10 +349,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async (): Promise<void> => {
     try {
-      await supabase.auth.signOut();
+      console.log('🚪 Starting logout process...');
+      setIsLoading(true);
+      
+      // Sign out from Supabase
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('❌ Supabase logout error:', error);
+        // Continue with logout even if Supabase fails
+      }
+      
+      // Clear user state
       setUser(null);
+      setIsLoading(false);
+      setIsInitialized(false);
+      setIsReady(false);
+      
+      console.log('✅ Logout completed successfully');
     } catch (error) {
-      console.error('Logout failed:', error);
+      console.error('❌ Logout failed:', error);
+      // Force logout even if there's an error
+      setUser(null);
+      setIsLoading(false);
+      setIsInitialized(false);
+      setIsReady(false);
     }
   };
 
