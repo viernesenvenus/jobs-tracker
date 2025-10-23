@@ -10,6 +10,7 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isInitialized: boolean;
+  isReady: boolean; // New: indicates when auth is fully ready
   login: (email: string, password: string) => Promise<boolean>;
   loginWithGoogle: () => Promise<boolean>;
   register: (email: string, password: string, name: string) => Promise<boolean>;
@@ -24,6 +25,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
   // Fallback timeout to ensure loading never gets stuck
   useEffect(() => {
@@ -66,6 +68,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log('✅ Setting loading to false');
         setIsLoading(false);
         setIsInitialized(true);
+        // Add small delay to ensure smooth transition
+        setTimeout(() => {
+          setIsReady(true);
+        }, 100);
       }
     };
 
@@ -437,6 +443,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user,
       isLoading,
       isInitialized,
+      isReady,
       login,
       loginWithGoogle,
       register,

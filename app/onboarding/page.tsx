@@ -30,10 +30,9 @@ export default function OnboardingPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (user?.onboardingCompleted) {
-      router.push('/dashboard');
-    }
-  }, [user, router]);
+    // Always redirect to dashboard since onboarding is removed
+    router.push('/dashboard');
+  }, [router]);
 
   const handleNext = () => {
     if (currentStep < 2) {
