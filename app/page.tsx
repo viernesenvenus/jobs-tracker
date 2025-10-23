@@ -21,12 +21,8 @@ export default function HomePage() {
     
     // Only redirect if we have a fully loaded user
     if (user) {
-      console.log('HomePage: User detected, redirecting based on onboarding status');
-      if (user.onboardingCompleted) {
-        router.push('/dashboard');
-      } else {
-        router.push('/onboarding');
-      }
+      console.log('HomePage: User detected, redirecting to dashboard');
+      router.push('/dashboard');
     }
   }, [user, isLoading, router]);
 
