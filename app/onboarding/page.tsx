@@ -89,7 +89,7 @@ export default function OnboardingPage() {
       case 0:
         return data.desiredRole.trim().length > 0;
       case 1:
-        return data.activeProcesses !== ''; // Must select an option
+        return true; // activeProcesses always has a value (defaults to 'none')
       case 2:
         return data.priorityFeatures.length > 0; // Must select at least one feature
       default:
