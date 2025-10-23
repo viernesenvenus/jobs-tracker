@@ -6,12 +6,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { SparklesIcon, StarIcon } from '@heroicons/react/24/outline';
 
 export default function HomePage() {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, isInitialized } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    // Don't redirect if still loading or if we're processing OAuth
-    if (isLoading) return;
+    // Don't redirect if still loading, not initialized, or if we're processing OAuth
+    if (isLoading || !isInitialized) return;
     
     // Check if we're in the middle of OAuth redirect (hash contains access_token)
     if (typeof window !== 'undefined' && window.location.hash.includes('access_token')) {

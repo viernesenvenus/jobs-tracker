@@ -91,7 +91,7 @@ export default function DashboardPage() {
   const [filter, setFilter] = useState<ApplicationStatus | 'all'>('all');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const { user, isLoading: isAuthLoading } = useAuth();
+  const { user, isLoading: isAuthLoading, isInitialized } = useAuth();
   const { openApplicationModal, openFollowUpModal, openConfirmationModal } = useModal();
   const { showSuccess, showError } = useToast();
   const router = useRouter();
@@ -104,9 +104,9 @@ export default function DashboardPage() {
       isAuthLoading 
     });
     
-    // Wait for auth to finish loading before checking user
-    if (isAuthLoading) {
-      console.log('⏳ Dashboard - Auth still loading, waiting...');
+    // Wait for auth to finish loading and initialization before checking user
+    if (isAuthLoading || !isInitialized) {
+      console.log('⏳ Dashboard - Auth still loading or not initialized, waiting...');
       return;
     }
     
@@ -117,11 +117,7 @@ export default function DashboardPage() {
       return;
     }
 
-    if (!user.onboardingCompleted) {
-      console.log('🔄 Dashboard - User needs onboarding, redirecting...');
-      router.push('/onboarding');
-      return;
-    }
+    // Onboarding removed - all users go directly to dashboard
     
     console.log('✅ Dashboard - User verified, loading applications...');
 

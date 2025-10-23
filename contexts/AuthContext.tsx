@@ -9,6 +9,7 @@ import type { Session, User as SupabaseUser } from '@supabase/supabase-js';
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
+  isInitialized: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   loginWithGoogle: () => Promise<boolean>;
   register: (email: string, password: string, name: string) => Promise<boolean>;
@@ -22,6 +23,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Fallback timeout to ensure loading never gets stuck
   useEffect(() => {
@@ -63,6 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } finally {
         console.log('✅ Setting loading to false');
         setIsLoading(false);
+        setIsInitialized(true);
       }
     };
 
@@ -197,7 +200,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         id: supabaseUser.id,
         email: supabaseUser.email || '',
         name: currentProfile?.full_name || supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'Usuario',
-        onboardingCompleted: supabaseUser.user_metadata?.onboarding_completed || false,
+        onboardingCompleted: true, // Always true since onboarding is removed
         preferences: {
           notifications: true,
           language: 'es',
@@ -433,6 +436,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider value={{
       user,
       isLoading,
+      isInitialized,
       login,
       loginWithGoogle,
       register,
