@@ -102,8 +102,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             console.log('OAuth redirect successful, loading user data...');
             await loadUserData(data.session.user);
             
-            // Redirect to dashboard after successful OAuth login
-            console.log('OAuth redirect successful, redirecting to dashboard');
+            // After successful OAuth login, update user state
+            console.log('OAuth redirect successful, updating user state');
+            await loadUserData(data.session.user);
             window.location.href = '/dashboard';
           }
         } catch (error) {
@@ -251,7 +252,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`
+          redirectTo: `${window.location.origin}`
         }
       });
 
