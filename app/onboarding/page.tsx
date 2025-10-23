@@ -89,9 +89,9 @@ export default function OnboardingPage() {
       case 0:
         return data.desiredRole.trim().length > 0;
       case 1:
-        return true; // Always can proceed from step 2
+        return data.activeProcesses !== ''; // Must select an option
       case 2:
-        return data.priorityFeatures.length > 0;
+        return data.priorityFeatures.length > 0; // Must select at least one feature
       default:
         return false;
     }
@@ -179,9 +179,17 @@ export default function OnboardingPage() {
                 ¿Qué necesitas priorizar ahora?
               </h2>
               <p className="text-gray-600">
-                Puedes cambiar estas preferencias cuando quieras.
+                Selecciona al menos una opción para continuar. Puedes cambiar estas preferencias cuando quieras.
               </p>
             </div>
+            
+            {data.priorityFeatures.length === 0 && (
+              <div className="text-center py-2">
+                <p className="text-sm text-amber-600 font-medium">
+                  ⚠️ Debes seleccionar al menos una opción para continuar
+                </p>
+              </div>
+            )}
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {priorityFeatures.map((feature) => (
