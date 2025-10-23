@@ -102,9 +102,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             console.log('OAuth redirect successful, loading user data...');
             await loadUserData(data.session.user);
             
-            // Redirect to dashboard after successful OAuth login
-            console.log('OAuth redirect successful, redirecting to dashboard');
-            window.location.href = '/dashboard';
+            // Redirect based on onboarding status after successful OAuth login
+            const onboardingCompleted = data.session.user.user_metadata?.onboarding_completed;
+            console.log('OAuth redirect - Onboarding completed:', onboardingCompleted);
+            
+            if (onboardingCompleted) {
+              console.log('OAuth user has completed onboarding, redirecting to dashboard');
+              window.location.href = '/dashboard';
+            } else {
+              console.log('OAuth user needs onboarding, redirecting to onboarding page');
+              window.location.href = '/onboarding';
+            }
           }
         } catch (error) {
           console.error('Error handling OAuth redirect:', error);
