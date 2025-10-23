@@ -45,15 +45,28 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
   const handleGoogleLogin = async () => {
     try {
       setIsGoogleLoading(true);
+      // Mostrar loading global antes de iniciar OAuth
+      const loader = document.getElementById('global-loading');
+      if (loader) {
+        loader.style.opacity = '1';
+        loader.style.pointerEvents = 'auto';
+      }
       const success = await loginWithGoogle();
-      if (success) {
-        showSuccess('¡Bienvenido!', 'Has iniciado sesión con Google correctamente.');
-        onSuccess?.();
-      } else {
+      if (!success) {
+        // Solo mostrar error si falla, si tiene éxito se redirige
         showError('Error', 'No se pudo iniciar sesión con Google.');
+        if (loader) {
+          loader.style.opacity = '0';
+          loader.style.pointerEvents = 'none';
+        }
       }
     } catch (error) {
       showError('Error', 'Ocurrió un error al iniciar sesión con Google.');
+      const loader = document.getElementById('global-loading');
+      if (loader) {
+        loader.style.opacity = '0';
+        loader.style.pointerEvents = 'none';
+      }
     } finally {
       setIsGoogleLoading(false);
     }

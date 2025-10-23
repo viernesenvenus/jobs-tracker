@@ -31,10 +31,11 @@ export default function HomePage() {
 
 
   const handleAuthClick = (action: 'login' | 'register') => {
+    // Usar window.location.href para navegación directa sin loading
     if (action === 'login') {
-      router.push('/login');
+      window.location.href = '/login';
     } else {
-      router.push('/login?mode=register');
+      window.location.href = '/login?mode=register';
     }
   };
 
