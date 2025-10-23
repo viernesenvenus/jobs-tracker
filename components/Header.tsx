@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   UserIcon, 
@@ -13,6 +14,7 @@ import {
 
 export function Header() {
   const { user, logout, isLoading } = useAuth();
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -26,9 +28,14 @@ export function Header() {
       await logout();
       setIsUserMenuOpen(false);
       setIsMenuOpen(false);
-      console.log('✅ Header: Logout completed');
+      console.log('✅ Header: Logout completed, redirecting to home...');
+      
+      // Redirect to home page after logout
+      router.push('/');
     } catch (error) {
       console.error('❌ Header: Logout error:', error);
+      // Even if there's an error, redirect to home
+      router.push('/');
     } finally {
       setIsLoggingOut(false);
     }
