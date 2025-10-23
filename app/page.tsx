@@ -10,46 +10,24 @@ export default function HomePage() {
   const router = useRouter();
 
   useEffect(() => {
-    const showLoading = () => {
+    // Solo mostrar loading y redirigir si hay un usuario o token de acceso
+    const hasAccessToken = typeof window !== 'undefined' && window.location.hash.includes('access_token');
+    
+    if (user || hasAccessToken) {
+      // Mostrar loading inmediatamente
       const loader = document.getElementById('global-loading');
       if (loader) {
         loader.style.opacity = '1';
         loader.style.pointerEvents = 'auto';
       }
-    };
 
-    const hideLoading = () => {
-      const loader = document.getElementById('global-loading');
-      if (loader) {
-        loader.style.opacity = '0';
-        loader.style.pointerEvents = 'none';
+      // Si hay usuario, redirigir al dashboard
+      if (user) {
+        console.log('HomePage: User detected, redirecting to dashboard');
+        window.location.href = '/dashboard';
       }
-    };
-
-    // Show loading when checking auth state
-    if (isLoading) {
-      showLoading();
-      return;
     }
-
-    // Handle OAuth redirect
-    if (typeof window !== 'undefined' && window.location.hash.includes('access_token')) {
-      showLoading();
-      console.log('OAuth redirect detected, waiting for AuthContext to handle it');
-      return;
-    }
-
-    // Handle authenticated user
-    if (user) {
-      showLoading();
-      console.log('HomePage: User detected, redirecting to dashboard');
-      window.location.href = '/dashboard';
-      return;
-    }
-
-    // Hide loading if no redirects needed
-    hideLoading();
-  }, [user, isLoading]);
+  }, [user]);
 
 
   const handleAuthClick = (action: 'login' | 'register') => {

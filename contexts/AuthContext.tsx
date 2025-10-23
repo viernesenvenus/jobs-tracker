@@ -102,14 +102,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             console.log('OAuth redirect successful, loading user data...');
             await loadUserData(data.session.user);
             
-            // After successful OAuth login, update user state and show loading
+            // After successful OAuth login, update user state
             console.log('OAuth redirect successful, updating user state');
+            await loadUserData(data.session.user);
+            
+            // Asegurar que el loading esté visible
             const loader = document.getElementById('global-loading');
             if (loader) {
               loader.style.opacity = '1';
               loader.style.pointerEvents = 'auto';
             }
-            await loadUserData(data.session.user);
+            
+            // Pequeño delay para asegurar que el loading esté visible
+            await new Promise(resolve => setTimeout(resolve, 100));
             window.location.href = '/dashboard';
           }
         } catch (error) {
@@ -253,7 +258,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loginWithGoogle = async (): Promise<boolean> => {
     try {
-      setIsLoading(true);
+      // Mostrar loading antes de iniciar OAuth
+      const loader = document.getElementById('global-loading');
+      if (loader) {
+        loader.style.opacity = '1';
+        loader.style.pointerEvents = 'auto';
+      }
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -263,15 +274,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         console.error('Google login error:', error.message);
+        // Ocultar loading si hay error
+        if (loader) {
+          loader.style.opacity = '0';
+          loader.style.pointerEvents = 'none';
+        }
         return false;
       }
 
       return true;
     } catch (error) {
       console.error('Google login failed:', error);
+      // Ocultar loading si hay error
+      const loader = document.getElementById('global-loading');
+      if (loader) {
+        loader.style.opacity = '0';
+        loader.style.pointerEvents = 'none';
+      }
       return false;
-    } finally {
-      setIsLoading(false);
     }
   };
 
