@@ -8,10 +8,10 @@ interface AuthGuardProps {
 }
 
 export function AuthGuard({ children }: AuthGuardProps) {
-  const { isReady, isLoading, isInitialized } = useAuth();
+  const { user, isReady, isLoading, isInitialized } = useAuth();
 
-  // Show loading until everything is ready
-  if (!isReady || isLoading || !isInitialized) {
+  // Show loading only if we're still initializing and haven't determined auth state yet
+  if (!isInitialized || isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -22,5 +22,6 @@ export function AuthGuard({ children }: AuthGuardProps) {
     );
   }
 
+  // Once initialized, always show content (whether user is logged in or not)
   return <>{children}</>;
 }

@@ -30,12 +30,12 @@ export function Header() {
       setIsMenuOpen(false);
       console.log('✅ Header: Logout completed, redirecting to home...');
       
-      // Redirect to home page after logout
-      router.push('/');
+      // Redirect to home page after logout using window.location for immediate redirect
+      window.location.href = '/';
     } catch (error) {
       console.error('❌ Header: Logout error:', error);
       // Even if there's an error, redirect to home
-      router.push('/');
+      window.location.href = '/';
     } finally {
       setIsLoggingOut(false);
     }
