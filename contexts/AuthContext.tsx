@@ -9,8 +9,6 @@ import type { Session, User as SupabaseUser } from '@supabase/supabase-js';
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  isInitialized: boolean;
-  isReady: boolean; // New: indicates when auth is fully ready
   login: (email: string, password: string) => Promise<boolean>;
   loginWithGoogle: () => Promise<boolean>;
   register: (email: string, password: string, name: string) => Promise<boolean>;
@@ -24,8 +22,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [isReady, setIsReady] = useState(false);
 
   // Fallback timeout to ensure loading never gets stuck
   useEffect(() => {
@@ -67,11 +63,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } finally {
         console.log('✅ Setting loading to false');
         setIsLoading(false);
-        setIsInitialized(true);
-        // Add small delay to ensure smooth transition
-        setTimeout(() => {
-          setIsReady(true);
-        }, 100);
       }
     };
 
@@ -206,7 +197,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         id: supabaseUser.id,
         email: supabaseUser.email || '',
         name: currentProfile?.full_name || supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'Usuario',
-        onboardingCompleted: true, // Always true since onboarding is removed
+        onboardingCompleted: supabaseUser.user_metadata?.onboarding_completed || false,
         preferences: {
           notifications: true,
           language: 'es',
@@ -349,31 +340,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async (): Promise<void> => {
     try {
-      console.log('🚪 Starting logout process...');
-      setIsLoading(true);
-      
-      // Sign out from Supabase
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) {
-        console.error('❌ Supabase logout error:', error);
-        // Continue with logout even if Supabase fails
-      }
-      
-      // Clear user state
+      await supabase.auth.signOut();
       setUser(null);
-      setIsLoading(false);
-      setIsInitialized(false);
-      setIsReady(false);
-      
-      console.log('✅ Logout completed successfully');
     } catch (error) {
-      console.error('❌ Logout failed:', error);
-      // Force logout even if there's an error
-      setUser(null);
-      setIsLoading(false);
-      setIsInitialized(false);
-      setIsReady(false);
+      console.error('Logout failed:', error);
     }
   };
 
@@ -463,8 +433,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider value={{
       user,
       isLoading,
-      isInitialized,
-      isReady,
       login,
       loginWithGoogle,
       register,

@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   UserIcon, 
@@ -13,32 +12,13 @@ import {
 } from '@heroicons/react/24/outline';
 
 export function Header() {
-  const { user, logout, isLoading } = useAuth();
-  const router = useRouter();
+  const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
-    if (isLoggingOut) return; // Prevent multiple clicks
-    
-    try {
-      setIsLoggingOut(true);
-      console.log('🚪 Header: Starting logout...');
-      await logout();
-      setIsUserMenuOpen(false);
-      setIsMenuOpen(false);
-      console.log('✅ Header: Logout completed, redirecting to home...');
-      
-      // Redirect to home page after logout using window.location for immediate redirect
-      window.location.href = '/';
-    } catch (error) {
-      console.error('❌ Header: Logout error:', error);
-      // Even if there's an error, redirect to home
-      window.location.href = '/';
-    } finally {
-      setIsLoggingOut(false);
-    }
+    await logout();
+    setIsUserMenuOpen(false);
   };
 
   return (
@@ -208,20 +188,14 @@ export function Header() {
                   <span className="text-sm font-medium text-gray-900">{user.name}</span>
                 </div>
                 <button
-                  onClick={handleLogout}
-                  disabled={isLoggingOut || isLoading}
-                  className={`flex items-center w-full px-4 py-2 text-sm rounded-md transition-colors ${
-                    isLoggingOut || isLoading
-                      ? 'text-gray-400 cursor-not-allowed bg-gray-50'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  }`}
+                  onClick={() => {
+                    handleLogout();
+                    setIsMenuOpen(false);
+                  }}
+                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
                 >
-                  {isLoggingOut ? (
-                    <div className="w-4 h-4 mr-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <ArrowRightOnRectangleIcon className="w-4 h-4 mr-3" />
-                  )}
-                  {isLoggingOut ? 'Cerrando sesión...' : 'Cerrar Sesión'}
+                  <ArrowRightOnRectangleIcon className="w-4 h-4 mr-3" />
+                  Cerrar Sesión
                 </button>
               </div>
             ) : (

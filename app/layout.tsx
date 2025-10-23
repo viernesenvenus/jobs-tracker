@@ -8,7 +8,6 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { ToastContainer } from '@/components/ToastContainer';
 import { ModalContainer } from '@/components/ModalContainer';
-import { AuthGuard } from '@/components/AuthGuard';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -28,17 +27,15 @@ export default function RootLayout({
         <AuthProvider>
           <ToastProvider>
             <ModalProvider>
-              <AuthGuard>
-                <div className="min-h-screen flex flex-col">
-                  <Header />
-                  <main className="flex-1">
-                    {children}
-                  </main>
-                  <Footer />
-                  <ToastContainer />
-                  <ModalContainer />
-                </div>
-              </AuthGuard>
+              <div className="min-h-screen flex flex-col">
+                <Header />
+                <main className="flex-1">
+                  {children}
+                </main>
+                <Footer />
+                <ToastContainer />
+                <ModalContainer />
+              </div>
             </ModalProvider>
           </ToastProvider>
         </AuthProvider>
