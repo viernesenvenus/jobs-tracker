@@ -10,21 +10,46 @@ export default function HomePage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Don't redirect if still loading or if we're processing OAuth
-    if (isLoading) return;
-    
-    // Check if we're in the middle of OAuth redirect (hash contains access_token)
+    const showLoading = () => {
+      const loader = document.getElementById('global-loading');
+      if (loader) {
+        loader.style.opacity = '1';
+        loader.style.pointerEvents = 'auto';
+      }
+    };
+
+    const hideLoading = () => {
+      const loader = document.getElementById('global-loading');
+      if (loader) {
+        loader.style.opacity = '0';
+        loader.style.pointerEvents = 'none';
+      }
+    };
+
+    // Show loading when checking auth state
+    if (isLoading) {
+      showLoading();
+      return;
+    }
+
+    // Handle OAuth redirect
     if (typeof window !== 'undefined' && window.location.hash.includes('access_token')) {
+      showLoading();
       console.log('OAuth redirect detected, waiting for AuthContext to handle it');
       return;
     }
-    
-    // Only redirect if we have a fully loaded user
+
+    // Handle authenticated user
     if (user) {
+      showLoading();
       console.log('HomePage: User detected, redirecting to dashboard');
-      router.push('/dashboard');
+      window.location.href = '/dashboard';
+      return;
     }
-  }, [user, isLoading, router]);
+
+    // Hide loading if no redirects needed
+    hideLoading();
+  }, [user, isLoading]);
 
 
   const handleAuthClick = (action: 'login' | 'register') => {

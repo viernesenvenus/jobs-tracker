@@ -102,8 +102,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             console.log('OAuth redirect successful, loading user data...');
             await loadUserData(data.session.user);
             
-            // After successful OAuth login, update user state
+            // After successful OAuth login, update user state and show loading
             console.log('OAuth redirect successful, updating user state');
+            const loader = document.getElementById('global-loading');
+            if (loader) {
+              loader.style.opacity = '1';
+              loader.style.pointerEvents = 'auto';
+            }
             await loadUserData(data.session.user);
             window.location.href = '/dashboard';
           }
