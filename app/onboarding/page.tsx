@@ -20,4 +20,5 @@ export default function OnboardingPage() {
       </div>
     </div>
   );
+}
 
