@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, OnboardingData } from '@/types';
 import { supabase } from '@/lib/supabase';
 import { profileService } from '@/lib/profileService';
+import { getAppUrl } from '@/lib/config';
 import type { Session, User as SupabaseUser } from '@supabase/supabase-js';
 
 interface AuthContextType {
@@ -265,21 +266,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loader.style.pointerEvents = 'auto';
       }
 
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}`
-        }
+          redirectTo: getAppUrl('/dashboard'), // redirige directo al dashboard
+        },
       });
 
       if (error) {
-        console.error('Google login error:', error.message);
+        console.error('Error al iniciar sesión con Google:', error.message);
         // Ocultar loading si hay error
         if (loader) {
           loader.style.opacity = '0';
           loader.style.pointerEvents = 'none';
         }
         return false;
+      } else {
+        console.log('Redirigiendo al flujo de Google Auth...');
       }
 
       return true;

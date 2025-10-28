@@ -45,14 +45,19 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
   const handleGoogleLogin = async () => {
     try {
       setIsGoogleLoading(true);
+      console.log('🔐 LoginForm - Attempting Google login...');
       const success = await loginWithGoogle();
+      console.log('📊 LoginForm - Google login result:', success);
+      
       if (success) {
-        showSuccess('¡Bienvenido!', 'Has iniciado sesión con Google correctamente.');
-        onSuccess?.();
+        console.log('✅ LoginForm - Google login initiated successfully');
+        // No mostrar toast aquí porque el usuario será redirigido
+        // El toast se mostrará cuando regrese del OAuth
       } else {
         showError('Error', 'No se pudo iniciar sesión con Google.');
       }
     } catch (error) {
+      console.error('❌ LoginForm - Google login error:', error);
       showError('Error', 'Ocurrió un error al iniciar sesión con Google.');
     } finally {
       setIsGoogleLoading(false);

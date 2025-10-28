@@ -188,7 +188,7 @@ Para probar la aplicación, usa estas credenciales:
 
 ### ✅ **Deploy Activo en Producción**
 
-**🌐 Aplicación en vivo:** [talenia-three.vercel.app](https://talenia-three.vercel.app)
+**🌐 Aplicación en vivo:** [talenia.vercel.app](https://talenia.vercel.app)
 
 **📦 Repositorio:** [github.com/viernesenvenus/talenia](https://github.com/viernesenvenus/talenia)
 

@@ -158,6 +158,7 @@ def main():
     print("\n" + "=" * 40)
     print("🎉 Talenia está ejecutándose!")
     print("📱 Aplicación: http://localhost:3000")
+    print("🌐 Producción: https://talenia.vercel.app")
     print("📁 Archivos estáticos: http://localhost:8000")
     print("\n💡 Comandos útiles:")
     print("   - Ctrl+C para detener ambos servidores")

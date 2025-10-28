@@ -1,33 +1,19 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthRedirect } from '@/hooks/useAuthRedirect';
 import { SparklesIcon, StarIcon } from '@heroicons/react/24/outline';
 
 export default function HomePage() {
-  const { user, isLoading } = useAuth();
   const router = useRouter();
-
-  useEffect(() => {
-    // Solo mostrar loading y redirigir si hay un usuario o token de acceso
-    const hasAccessToken = typeof window !== 'undefined' && window.location.hash.includes('access_token');
-    
-    if (user || hasAccessToken) {
-      // Mostrar loading inmediatamente
-      const loader = document.getElementById('global-loading');
-      if (loader) {
-        loader.style.opacity = '1';
-        loader.style.pointerEvents = 'auto';
-      }
-
-      // Si hay usuario, redirigir al dashboard
-      if (user) {
-        console.log('HomePage: User detected, redirecting to dashboard');
-        window.location.href = '/dashboard';
-      }
-    }
-  }, [user]);
+  
+  // Redirigir usuarios autenticados al dashboard
+  useAuthRedirect({ 
+    requireAuth: false, // Página pública
+    redirectTo: '/dashboard',
+    showLoading: true 
+  });
 
 
   const handleAuthClick = (action: 'login' | 'register') => {
@@ -100,7 +86,7 @@ export default function HomePage() {
                     <div className="w-3 h-3 bg-green-400 rounded-full"></div>
                   </div>
                   <div className="flex-1 bg-white rounded px-3 py-1 text-sm text-gray-500">
-                    talenia.com/dashboard
+                    talenia.vercel.app/dashboard
                   </div>
                 </div>
 
