@@ -252,7 +252,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         preferences: {
           notifications: true,
           language: 'es',
-          priorityFeatures: ['job_tracking', 'cv_management', 'ai_adaptation'],
+          priorityFeatures: ['job_tracking' as const, 'cv_management' as const, 'ai_adaptation' as const],
           activeProcesses: 0
         },
         createdAt: new Date(supabaseUser.created_at),
@@ -349,7 +349,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           data: {
             full_name: name,
             onboarding_completed: true,
-            priority_features: ['job_tracking', 'cv_management', 'ai_adaptation']
+            priority_features: ['job_tracking' as const, 'cv_management' as const, 'ai_adaptation' as const]
           }
         }
       });
