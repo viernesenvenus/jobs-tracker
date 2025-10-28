@@ -450,7 +450,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           onboardingCompleted: true,
           preferences: {
             ...prevUser.preferences,
-            priorityFeatures: data.priorityFeatures,
+            priorityFeatures: data.priorityFeatures as ('job_tracking' | 'cv_management' | 'ai_adaptation')[],
             activeProcesses: data.activeProcesses === 'none' ? 0 : data.activeProcesses === '1-2' ? 1 : 3
           }
         };
