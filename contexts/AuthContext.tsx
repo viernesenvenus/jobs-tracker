@@ -248,12 +248,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         id: supabaseUser.id,
         email: supabaseUser.email || '',
         name: currentProfile?.full_name || supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'Usuario',
-        onboardingCompleted: supabaseUser.user_metadata?.onboarding_completed || false,
+        onboardingCompleted: true, // Siempre marcar como completado
         preferences: {
           notifications: true,
           language: 'es',
-          priorityFeatures: supabaseUser.user_metadata?.priority_features || [],
-          activeProcesses: supabaseUser.user_metadata?.active_processes || 0
+          priorityFeatures: ['job_tracking', 'cv_management', 'ai_adaptation'],
+          activeProcesses: 0
         },
         createdAt: new Date(supabaseUser.created_at),
         updatedAt: new Date()
@@ -348,7 +348,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         options: {
           data: {
             full_name: name,
-            onboarding_completed: false
+            onboarding_completed: true,
+            priority_features: ['job_tracking', 'cv_management', 'ai_adaptation']
           }
         }
       });

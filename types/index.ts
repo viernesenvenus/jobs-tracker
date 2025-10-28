@@ -12,7 +12,7 @@ export interface User {
 export interface UserPreferences {
   notifications: boolean;
   language: 'es' | 'pt' | 'en';
-  priorityFeatures: string[];
+  priorityFeatures: ('job_tracking' | 'cv_management' | 'ai_adaptation')[];
   activeProcesses: number;
 }
 
