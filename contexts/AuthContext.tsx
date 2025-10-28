@@ -29,7 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const fallbackTimeout = setTimeout(() => {
       console.log('⚠️ Fallback timeout: Forcing loading to false');
       setIsLoading(false);
-    }, 15000); // 15 seconds max
+    }, 8000); // 8 seconds max - reducido para mejor UX
 
     return () => clearTimeout(fallbackTimeout);
   }, []);
@@ -39,6 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const getInitialSession = async () => {
       try {
         console.log('🔍 Getting initial session...');
+        console.log('🌐 Current URL:', typeof window !== 'undefined' ? window.location.href : 'SSR');
         
         // Add timeout to prevent infinite loading
         const timeoutPromise = new Promise((_, reject) => 
@@ -47,14 +48,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         const sessionPromise = supabase.auth.getSession();
         
-        const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]) as any;
+        const { data: { session }, error } = await Promise.race([sessionPromise, timeoutPromise]) as any;
         
-        console.log('📊 Session result:', session ? 'Found' : 'Not found');
+        console.log('📊 Session result:', { 
+          hasSession: !!session, 
+          hasUser: !!session?.user,
+          userEmail: session?.user?.email,
+          error: error?.message 
+        });
         
         if (session?.user) {
           console.log('👤 User found, loading data...');
           await loadUserData(session.user);
-          console.log('✅ User data loaded, not redirecting from initial session');
+          console.log('✅ User data loaded successfully');
         } else {
           console.log('👤 No user session found');
         }
@@ -90,21 +96,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const handleHashChange = async () => {
       const hash = window.location.hash;
-      if (hash.includes('access_token')) {
-        console.log('Processing OAuth redirect...');
+      const searchParams = new URLSearchParams(window.location.search);
+      
+      console.log('🔍 Checking for OAuth redirect:', { hash, search: window.location.search });
+      
+      if (hash.includes('access_token') || searchParams.has('code')) {
+        console.log('🔄 Processing OAuth redirect...');
         try {
           // Wait a bit for Supabase to process the token
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise(resolve => setTimeout(resolve, 1500));
           
           const { data, error } = await supabase.auth.getSession();
+          console.log('📊 OAuth session check:', { hasSession: !!data.session, hasUser: !!data.session?.user, error: error?.message });
+          
           if (error) {
-            console.error('Error processing OAuth redirect:', error);
+            console.error('❌ Error processing OAuth redirect:', error);
           } else if (data.session?.user) {
-            console.log('OAuth redirect successful, loading user data...');
-            await loadUserData(data.session.user);
-            
-            // After successful OAuth login, update user state
-            console.log('OAuth redirect successful, updating user state');
+            console.log('✅ OAuth redirect successful, loading user data...');
             await loadUserData(data.session.user);
             
             // Asegurar que el loading esté visible
@@ -115,11 +123,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
             
             // Pequeño delay para asegurar que el loading esté visible
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise(resolve => setTimeout(resolve, 200));
             window.location.href = '/dashboard';
+          } else {
+            console.log('⚠️ OAuth redirect but no session found, checking again...');
+            // Intentar una vez más después de un delay
+            setTimeout(async () => {
+              const { data: retryData } = await supabase.auth.getSession();
+              if (retryData.session?.user) {
+                console.log('✅ Retry successful, loading user data...');
+                await loadUserData(retryData.session.user);
+                window.location.href = '/dashboard';
+              }
+            }, 2000);
           }
         } catch (error) {
-          console.error('Error handling OAuth redirect:', error);
+          console.error('❌ Error handling OAuth redirect:', error);
         }
       }
     };

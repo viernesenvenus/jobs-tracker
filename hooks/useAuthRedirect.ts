@@ -29,7 +29,18 @@ export function useAuthRedirect(options: UseAuthRedirectOptions = {}) {
 
   useEffect(() => {
     // No hacer nada si aún está cargando
-    if (isLoading) return;
+    if (isLoading) {
+      console.log('⏳ Still loading, waiting...');
+      return;
+    }
+
+    console.log('🔍 Auth redirect check:', { 
+      hasUser: !!user, 
+      isLoading, 
+      requireAuth, 
+      redirectTo,
+      userEmail: user?.email 
+    });
 
     // Si requiere autenticación y no hay usuario, redirigir al login
     if (requireAuth && !user) {
@@ -50,7 +61,10 @@ export function useAuthRedirect(options: UseAuthRedirectOptions = {}) {
         }
       }
       
-      router.push(redirectTo);
+      // Pequeño delay para asegurar que el loading se muestre
+      setTimeout(() => {
+        router.push(redirectTo);
+      }, 100);
       return;
     }
 
