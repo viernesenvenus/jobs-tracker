@@ -14,7 +14,7 @@ export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
 
   // Redirigir usuarios autenticados al dashboard
-  const { isLoading } = useAuthRedirect({ 
+  const { user, isLoading } = useAuthRedirect({ 
     requireAuth: false, // Página de login no requiere autenticación
     redirectTo: '/dashboard',
     showLoading: true 
