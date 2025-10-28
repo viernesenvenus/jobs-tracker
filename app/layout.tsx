@@ -12,7 +12,7 @@ import { ModalContainer } from '@/components/ModalContainer';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Jobs Tracker - Organiza tu búsqueda laboral',
+  title: 'Talenia - Organiza tu búsqueda laboral',
   description: 'Centraliza oportunidades, versiones de CV y tu avance—todo en un solo lugar.',
 };
 

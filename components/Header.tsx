@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
+import { TaleniaLogo } from './TaleniaLogo';
 import { 
   UserIcon, 
   Cog6ToothIcon, 
@@ -29,25 +30,13 @@ export function Header() {
           <div className="flex items-center">
             {user ? (
               // Si el usuario está autenticado, el logo no es un enlace
-              <div className="flex items-center space-x-3 cursor-default">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">J</span>
-                </div>
-                <div>
-                  <span className="text-xl font-bold text-gray-900">Jobs Tracker</span>
-                  <p className="text-xs text-gray-500">Tu buscador laboral organizado</p>
-                </div>
+              <div className="cursor-default">
+                <TaleniaLogo size="md" showText={true} className="text-blue-600" />
               </div>
             ) : (
               // Si el usuario NO está autenticado, el logo redirige a la página de inicio
-              <Link href="/" className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">J</span>
-                </div>
-                <div>
-                  <span className="text-xl font-bold text-gray-900">Jobs Tracker</span>
-                  <p className="text-xs text-gray-500">Tu buscador laboral organizado</p>
-                </div>
+              <Link href="/">
+                <TaleniaLogo size="md" showText={true} className="text-blue-600" />
               </Link>
             )}
           </div>

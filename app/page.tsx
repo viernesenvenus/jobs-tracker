@@ -100,7 +100,7 @@ export default function HomePage() {
                     <div className="w-3 h-3 bg-green-400 rounded-full"></div>
                   </div>
                   <div className="flex-1 bg-white rounded px-3 py-1 text-sm text-gray-500">
-                    jobs-tracker.com/dashboard
+                    talenia.com/dashboard
                   </div>
                 </div>
 
@@ -187,7 +187,7 @@ export default function HomePage() {
         <div className="bg-gray-50 py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8">
-              <p className="text-gray-600 text-sm">Candidatos de estas empresas ya usan Jobs Tracker</p>
+              <p className="text-gray-600 text-sm">Candidatos de estas empresas ya usan Talenia</p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 items-center justify-items-center">
               {['Rappi', 'Mercado Libre', 'Globant', 'Platzi', 'BCP', 'Falabella'].map((company) => (

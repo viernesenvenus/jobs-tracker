@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { LoginForm } from '@/components/LoginForm';
 import { RegisterForm } from '@/components/RegisterForm';
+import { TaleniaLogo } from '@/components/TaleniaLogo';
 import Link from 'next/link';
 
 export default function LoginPage() {
@@ -52,8 +53,10 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900">Jobs Tracker</h1>
-          <p className="mt-2 text-sm text-gray-600">
+          <div className="flex justify-center mb-4">
+            <TaleniaLogo size="lg" showText={true} className="text-blue-600" />
+          </div>
+          <p className="text-sm text-gray-600">
             Organiza tu búsqueda laboral. Destaca en cada postulación.
           </p>
         </div>

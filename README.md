@@ -1,10 +1,10 @@
-# 🎯 Jobs Tracker MVP1
+# 🎯 Talenia MVP1
 
 > **Organiza tu búsqueda laboral. Destaca en cada postulación.**
 
 Una aplicación moderna para gestionar postulaciones laborales con adaptación de CV por IA, diseñada específicamente para el mercado LATAM.
 
-![Jobs Tracker Dashboard](https://img.shields.io/badge/Status-Production%20Ready-green)
+![Talenia Dashboard](https://img.shields.io/badge/Status-Production%20Ready-green)
 ![Next.js](https://img.shields.io/badge/Next.js-14-black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-3.0-38B2AC)
@@ -85,8 +85,8 @@ Una aplicación moderna para gestionar postulaciones laborales con adaptación d
 
 ```bash
 # 1. Clonar el repositorio
-git clone https://github.com/viernesenvenus/jobs-tracker.git
-cd jobs-tracker
+git clone https://github.com/viernesenvenus/talenia.git
+cd talenia
 
 # 2. Instalar dependencias
 npm install
@@ -188,9 +188,9 @@ Para probar la aplicación, usa estas credenciales:
 
 ### ✅ **Deploy Activo en Producción**
 
-**🌐 Aplicación en vivo:** [jobs-tracker-three.vercel.app](https://jobs-tracker-three.vercel.app)
+**🌐 Aplicación en vivo:** [talenia-three.vercel.app](https://talenia-three.vercel.app)
 
-**📦 Repositorio:** [github.com/viernesenvenus/jobs-tracker](https://github.com/viernesenvenus/jobs-tracker)
+**📦 Repositorio:** [github.com/viernesenvenus/talenia](https://github.com/viernesenvenus/talenia)
 
 ### Vercel (Recomendado)
 ```bash
@@ -261,8 +261,8 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para
 
 ## 📞 Contacto
 
-- **GitHub**: [viernesenvenus/jobs-tracker](https://github.com/viernesenvenus/jobs-tracker)
-- **Issues**: [Reportar bugs o sugerencias](https://github.com/viernesenvenus/jobs-tracker/issues)
+- **GitHub**: [viernesenvenus/talenia](https://github.com/viernesenvenus/talenia)
+- **Issues**: [Reportar bugs o sugerencias](https://github.com/viernesenvenus/talenia/issues)
 
 ---
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Servidor local de Python para Jobs Tracker
+Servidor local de Python para Talenia
 Sirve archivos estáticos y redirige a Next.js en desarrollo
 """
 
@@ -14,7 +14,7 @@ import os
 import sys
 from pathlib import Path
 
-class JobsTrackerHandler(http.server.SimpleHTTPRequestHandler):
+class TaleniaHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=os.getcwd(), **kwargs)
     
@@ -106,7 +106,7 @@ def start_python_server(port=8000):
     print(f"🐍 Iniciando servidor Python en puerto {port}...")
     
     try:
-        with socketserver.TCPServer(("", port), JobsTrackerHandler) as httpd:
+        with socketserver.TCPServer(("", port), TaleniaHandler) as httpd:
             print(f"✅ Servidor Python ejecutándose en http://localhost:{port}")
             print("📁 Sirviendo archivos estáticos...")
             httpd.serve_forever()
@@ -119,7 +119,7 @@ def start_python_server(port=8000):
 
 def main():
     """Función principal"""
-    print("🎯 Jobs Tracker - Servidor Local")
+    print("🎯 Talenia - Servidor Local")
     print("=" * 40)
     
     # Verificar prerrequisitos
@@ -132,7 +132,7 @@ def main():
     # Verificar si package.json existe
     if not Path("package.json").exists():
         print("❌ No se encontró package.json en el directorio actual")
-        print("Asegúrate de estar en el directorio del proyecto Jobs Tracker")
+        print("Asegúrate de estar en el directorio del proyecto Talenia")
         sys.exit(1)
     
     # Instalar dependencias si es necesario
@@ -156,7 +156,7 @@ def main():
     webbrowser.open("http://localhost:3000")
     
     print("\n" + "=" * 40)
-    print("🎉 Jobs Tracker está ejecutándose!")
+    print("🎉 Talenia está ejecutándose!")
     print("📱 Aplicación: http://localhost:3000")
     print("📁 Archivos estáticos: http://localhost:8000")
     print("\n💡 Comandos útiles:")

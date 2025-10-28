@@ -111,7 +111,7 @@ export function Footer() {
         <div className="mt-8 pt-8 border-t border-gray-200">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-sm text-gray-600">
-              © 2024 Jobs Tracker. Todos los derechos reservados.
+              © 2024 Talenia. Todos los derechos reservados.
             </p>
             <p className="text-sm text-gray-600 mt-2 md:mt-0">
               Organiza tu búsqueda laboral, destaca en cada postulación.
