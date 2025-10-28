@@ -1,19 +1,29 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthRedirect } from '@/hooks/useAuthRedirect';
+import { useAuth } from '@/contexts/AuthContext';
 import { SparklesIcon, StarIcon } from '@heroicons/react/24/outline';
 
 export default function HomePage() {
   const router = useRouter();
-  
+  const { user, isLoading } = useAuth();
+
   // Redirigir usuarios autenticados al dashboard
-  useAuthRedirect({ 
-    requireAuth: false, // Página pública
-    redirectTo: '/dashboard',
-    showLoading: true 
-  });
+  useEffect(() => {
+    if (!isLoading && user) {
+      console.log('👤 User authenticated, redirecting to dashboard from home page');
+      
+      // Mostrar loading
+      const loader = document.getElementById('global-loading');
+      if (loader) {
+        loader.style.opacity = '1';
+        loader.style.pointerEvents = 'auto';
+      }
+      
+      router.push('/dashboard');
+    }
+  }, [user, isLoading, router]);
 
 
   const handleAuthClick = (action: 'login' | 'register') => {

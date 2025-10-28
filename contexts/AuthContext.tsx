@@ -41,20 +41,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log('🔍 Getting initial session...');
         console.log('🌐 Current URL:', typeof window !== 'undefined' ? window.location.href : 'SSR');
         
-        // Add timeout to prevent infinite loading
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Session timeout')), 10000)
-        );
+        // Try multiple times to get session
+        let session = null;
+        let attempts = 0;
+        const maxAttempts = 3;
         
-        const sessionPromise = supabase.auth.getSession();
+        while (attempts < maxAttempts && !session) {
+          attempts++;
+          console.log(`🔄 Attempt ${attempts} to get session...`);
+          
+          const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+          
+          if (error) {
+            console.error(`❌ Error on attempt ${attempts}:`, error);
+          } else if (currentSession?.user) {
+            session = currentSession;
+            console.log(`✅ Session found on attempt ${attempts}`);
+            break;
+          } else {
+            console.log(`⚠️ No session on attempt ${attempts}, waiting...`);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+        }
         
-        const { data: { session }, error } = await Promise.race([sessionPromise, timeoutPromise]) as any;
-        
-        console.log('📊 Session result:', { 
+        console.log('📊 Final session result:', { 
           hasSession: !!session, 
           hasUser: !!session?.user,
           userEmail: session?.user?.email,
-          error: error?.message 
+          attempts 
         });
         
         if (session?.user) {
@@ -62,7 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           await loadUserData(session.user);
           console.log('✅ User data loaded successfully');
         } else {
-          console.log('👤 No user session found');
+          console.log('👤 No user session found after all attempts');
         }
       } catch (error) {
         console.error('❌ Error getting initial session:', error);
@@ -79,12 +93,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('🔄 Auth state change:', event, session?.user?.email);
-        if (session?.user) {
-          await loadUserData(session.user);
-          console.log('✅ User data loaded from auth state change');
-        } else {
+        
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          if (session?.user) {
+            console.log('✅ User signed in, loading data...');
+            await loadUserData(session.user);
+            console.log('✅ User data loaded from auth state change');
+          }
+        } else if (event === 'SIGNED_OUT') {
+          console.log('👋 User signed out');
           setUser(null);
         }
+        
         setIsLoading(false);
       }
     );

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuthRedirect } from '@/hooks/useAuthRedirect';
+import { useAuth } from '@/contexts/AuthContext';
 import { LoginForm } from '@/components/LoginForm';
 import { RegisterForm } from '@/components/RegisterForm';
 import { TaleniaLogo } from '@/components/TaleniaLogo';
@@ -12,13 +12,15 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isLogin, setIsLogin] = useState(true);
+  const { user, isLoading } = useAuth();
 
   // Redirigir usuarios autenticados al dashboard
-  const { user, isLoading } = useAuthRedirect({ 
-    requireAuth: false, // Página de login no requiere autenticación
-    redirectTo: '/dashboard',
-    showLoading: true 
-  });
+  useEffect(() => {
+    if (!isLoading && user) {
+      console.log('👤 User authenticated, redirecting to dashboard from login page');
+      router.push('/dashboard');
+    }
+  }, [user, isLoading, router]);
 
   useEffect(() => {
     // Check if mode=register is in the URL
