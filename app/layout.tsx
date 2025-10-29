@@ -1,3 +1,4 @@
+import Script from "next/script";
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
@@ -23,6 +24,20 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
+      <Script
+          async
+          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
+          strategy="afterInteractive"
+        />
+        <Script id="ga-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}', { send_page_view: true });
+          `}
+        </Script>
+      </head>
       <body className={inter.className}>
         <AuthProvider>
           <ToastProvider>
