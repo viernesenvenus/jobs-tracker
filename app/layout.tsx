@@ -24,8 +24,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-       <head>
-        <Script
+      <head>
+      <Script
           async
           src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
           strategy="afterInteractive"
