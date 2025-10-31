@@ -10,7 +10,7 @@ import type { Session, User as SupabaseUser } from '@supabase/supabase-js';
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   loginWithGoogle: () => Promise<boolean>;
   register: (email: string, password: string, name: string) => Promise<boolean>;
   logout: () => Promise<void>;
@@ -266,7 +266,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
       setIsLoading(true);
       console.log('🔐 Attempting login for:', email);
@@ -277,8 +277,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) {
-        console.error('❌ Login error:', error.message);
-        return false;
+        console.error('❌ Login error:', error.message, error.status);
+        
+        // Manejar errores específicos
+        let errorMessage = 'Credenciales incorrectas. Verifica tu email y contraseña.';
+        
+        if (error.message.includes('Email not confirmed') || error.message.includes('email_not_confirmed')) {
+          errorMessage = 'Por favor, verifica tu email antes de iniciar sesión. Revisa tu bandeja de entrada.';
+        } else if (error.message.includes('Invalid login credentials') || error.message.includes('invalid_credentials')) {
+          errorMessage = 'Email o contraseña incorrectos. Intenta nuevamente.';
+        } else if (error.message.includes('User not found')) {
+          errorMessage = 'No se encontró una cuenta con este email. ¿Ya te registraste?';
+        } else if (error.message.includes('Too many requests')) {
+          errorMessage = 'Demasiados intentos. Espera unos minutos antes de intentar nuevamente.';
+        }
+        
+        return { success: false, error: errorMessage };
       }
 
       if (data.user) {
@@ -287,10 +301,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log('✅ User data loaded successfully');
       }
 
-      return true;
-    } catch (error) {
+      return { success: true };
+    } catch (error: any) {
       console.error('❌ Login failed:', error);
-      return false;
+      return { success: false, error: 'Ocurrió un error inesperado. Por favor, intenta nuevamente.' };
     } finally {
       setIsLoading(false);
     }

@@ -32,13 +32,16 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       console.log('Attempting to register user:', data.email);
       const success = await registerUser(data.email, data.password, data.name);
       if (success) {
-        showSuccess('¡Registro exitoso!', 'Tu cuenta ha sido creada correctamente. Revisa tu email para confirmar tu cuenta.');
+        showSuccess(
+          '¡Registro exitoso!', 
+          'Tu cuenta ha sido creada correctamente. Si tu plataforma requiere verificación de email, revisa tu bandeja de entrada antes de iniciar sesión.'
+        );
         
         // Wait a moment for the success message to show, then redirect
         setTimeout(() => {
           console.log('Redirecting to dashboard after successful registration');
           onSuccess?.();
-        }, 2000);
+        }, 3000); // Aumentado a 3 segundos para que el usuario lea el mensaje
       } else {
         showError('Error', 'No se pudo crear la cuenta. Verifica que el email no esté ya registrado y que la contraseña tenga al menos 6 caracteres.');
       }
