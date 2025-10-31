@@ -9,6 +9,7 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { ToastContainer } from '@/components/ToastContainer';
 import { ModalContainer } from '@/components/ModalContainer';
+import { Analytics } from "@vercel/analytics/react";
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -58,6 +59,7 @@ export default function RootLayout({
             </ModalProvider>
           </ToastProvider>
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   );
